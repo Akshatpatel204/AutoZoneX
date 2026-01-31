@@ -1,0 +1,167 @@
+@font-face {
+    font-family: the seasons;
+    src: url("../assets/fonts/Fontspring-DEMO-theseasons-reg.otf");
+}
+
+
+* {
+    margin: 0;
+    padding: 0;
+    font-family: the seasons;
+    box-sizing: border-box;
+    /* background: transparent; */
+}
+
+.first {
+    width: 100%;
+    min-height: 100vh;
+    /* color: #525252; */
+    background-size: cover;
+    background-position:center;
+    background-repeat: no-repeat;
+}
+
+nav {
+    /* background: transparent; */
+    background: transparent;
+    width: 100%;
+    padding: 10px 10%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+}
+
+.logo {
+    background: transparent;
+    scale: 1.5;
+    width: 120px;
+    cursor: pointer;
+    mix-blend-mode: lighten;
+}
+
+.user-pic {
+    width: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    margin-left: 30px;
+    background: none;
+    margin-bottom: 13px;
+}
+
+nav ul {
+    width: 100%;
+    text-align: right;
+}
+
+nav ul li {
+    display: inline-block;
+    list-style: none;
+    margin: 10px 20px;
+}
+
+nav ul li a {
+    text-decoration: none;
+    font-family: the seasons;
+    background: #000;
+}
+
+.active {
+    color: white;
+}
+
+.disactive {
+    color: gray;
+}
+
+/* --- Sub-menu Styling --- */
+
+.sub-menu-wrap {
+    position: absolute;
+    /* background: transparent; */
+    top: 100%;
+    right: 10%;
+    width: 320px;
+    max-height: 0px;
+    /* Initially hidden */
+    overflow: hidden;
+    transition: max-height 0.5s;
+}
+
+/* This class is toggled by JS */
+.open-menu {
+    max-height: 400px;
+}
+
+.sub-menu {
+    background: #fff;
+    /* background-color: #525252; */
+    padding: 20px;
+    margin: 10px;
+}
+
+.user-info {
+    display: flex;
+        background: white;
+    align-items: center;
+}
+
+.user-info h3 {
+    font-weight: 500;
+        background: white;
+
+}
+
+.user-info img {
+    width: 60px;
+        background: white;
+    border-radius: 50%;
+    margin-right: 15px;
+}
+
+.sub-menu hr {
+    border: 0;
+    height: 1px;
+    width: 100%;
+    background: #ccc;
+
+    margin: 15px 0 10px;
+}
+
+.sub-menu-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #525252;
+    margin: 12px 0;
+    background: white;
+}
+
+.sub-menu-link p {
+    /* font-family: the seasons; */
+    width: 100%;
+    background: white;
+    /* padding-top: 25px; */
+
+}
+
+.sub-menu-link img {
+    width: 40px;
+    background: #e5e5e5;
+    border-radius: 50%;
+    padding: 8px;
+    margin-right: 15px;
+}
+
+.sub-menu-link span {
+    font-size: 22px;
+    transition: transform 0.5s;
+}
+
+.sub-menu-link:hover span {
+    transform: translateX(5px);
+}
+
+.sub-menu-link:hover p {
+    font-weight: 600;
+}
