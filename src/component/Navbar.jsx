@@ -11,22 +11,15 @@ const Navbar = ({ user, logout }) => {
     };
 
     return (
-        <nav>
-            <img src="image/nav_logo.jpg" className="logo" alt="Logo" />
+        <nav >
+            <div className="flex items-center gap-2 text-lg font-bold ">
+                <span className="material-symbols-outlined text-primary text-2xl ">speed</span>
+                <span style={{ fontFamily: "Orbitron" }} className="text-white">AUTOZONEX</span>
+            </div>            
             <ul>
                 <li>
                     <NavLink to="/" className={({ isActive }) => isActive ? "active" : "disactive"}>
                         Home
-                    </NavLink>
-                </li>
-                <li>
-                    <NavLink to="/cars" className={({ isActive }) => isActive ? "active" : "disactive"}>
-                        Cars
-                    </NavLink>
-                </li>
-                <li>
-                    <NavLink to="/bikes" className={({ isActive }) => isActive ? "active" : "disactive"}>
-                        Bikes
                     </NavLink>
                 </li>
                 <li>
@@ -37,11 +30,11 @@ const Navbar = ({ user, logout }) => {
             </ul>
 
             {/* FIXED: No backticks, no immediate execution */}
-            <img 
-                src="image/30 dp profile icon.png" 
-                className="user-pic" 
-                id="profile_btn" 
-                onClick={toggleMenu} 
+            <img
+                src="image/30 dp profile icon.png"
+                className="user-pic"
+                id="profile_btn"
+                onClick={toggleMenu}
                 alt="Profile"
             />
 
@@ -49,7 +42,7 @@ const Navbar = ({ user, logout }) => {
             <div className={dropDown ? "sub-menu-wrap open-menu" : "sub-menu-wrap"} id="subMenu">
                 <div className="sub-menu">
                     <div className="user-info">
-                        <img src="image/60 dp profile icon .png" alt="User Profile" />
+                        <img src="image/30 dp profile icon.png" alt="User Profile" />
                         <h3 className="user_name">{user?.displayName || "Hello Guest"}</h3>
                     </div>
                     <hr />

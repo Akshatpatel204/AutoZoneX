@@ -23,13 +23,14 @@
 
 nav {
     /* background: transparent; */
-    background: transparent;
+    background: #141B25;
     width: 100%;
     padding: 10px 10%;
     display: flex;
     align-items: center;
     justify-content: space-between;
     position: relative;
+    z-index: 1000; 
 }
 
 .logo {
@@ -63,7 +64,7 @@ nav ul li {
 nav ul li a {
     text-decoration: none;
     font-family: the seasons;
-    background: #000;
+    background: transparent;
 }
 
 .active {
@@ -86,6 +87,7 @@ nav ul li a {
     /* Initially hidden */
     overflow: hidden;
     transition: max-height 0.5s;
+    z-index: 2000;
 }
 
 /* This class is toggled by JS */
@@ -94,7 +96,7 @@ nav ul li a {
 }
 
 .sub-menu {
-    background: #fff;
+    background: #141B25;
     /* background-color: #525252; */
     padding: 20px;
     margin: 10px;
@@ -102,19 +104,19 @@ nav ul li a {
 
 .user-info {
     display: flex;
-        background: white;
+        background: #141B25;
     align-items: center;
 }
 
 .user-info h3 {
     font-weight: 500;
-        background: white;
-
+    background: #141B25;
+    color: white;
 }
 
 .user-info img {
     width: 60px;
-        background: white;
+    background: #141B25;
     border-radius: 50%;
     margin-right: 15px;
 }
@@ -123,8 +125,7 @@ nav ul li a {
     border: 0;
     height: 1px;
     width: 100%;
-    background: #ccc;
-
+    background: #141B25;
     margin: 15px 0 10px;
 }
 
@@ -134,15 +135,16 @@ nav ul li a {
     text-decoration: none;
     color: #525252;
     margin: 12px 0;
-    background: white;
+    background: #141B25;
 }
 
 .sub-menu-link p {
     /* font-family: the seasons; */
+    margin-bottom: -1px;
     width: 100%;
-    background: white;
+    color: white;
+    background: 141B25;
     /* padding-top: 25px; */
-
 }
 
 .sub-menu-link img {

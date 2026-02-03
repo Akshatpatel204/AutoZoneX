@@ -1,4 +1,106 @@
 @import "tailwindcss";
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-brand-blue: #3b82f6;
+}
+
+@layer base {
+  body {
+    @apply bg-zinc-950 text-white antialiased font-sans;
+  }
+}
+/* --------------------------------
+   Global font
+---------------------------------*/
+html,
+body {
+  font-family: "Inter", sans-serif;
+}
+
+/* --------------------------------
+   Theme variables (from Stitch)
+---------------------------------*/
+:root {
+  --color-primary: #256af4;
+  --background-light: #f5f6f8;
+  --background-dark: #050505;
+  --card-dark: #111111;
+  --border-dark: #222f49;
+
+  --radius-default: 0.25rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-full: 9999px;
+}
+
+/* --------------------------------
+   Dark mode (darkMode: "class")
+---------------------------------*/
+.dark {
+  --bg-current: var(--background-dark);
+}
+
+/* --------------------------------
+   Custom utility classes
+---------------------------------*/
+
+/* Background colors */
+.bg-primary {
+  background-color: var(--color-primary);
+}
+
+.bg-background-light {
+  background-color: var(--background-light);
+}
+
+.bg-background-dark {
+  background-color: var(--background-dark);
+}
+
+.bg-card-dark {
+  background-color: var(--card-dark);
+}
+
+/* Border color */
+.border-dark {
+  border-color: var(--border-dark);
+}
+
+/* Border radius */
+.rounded {
+  border-radius: var(--radius-default);
+}
+
+.rounded-lg {
+  border-radius: var(--radius-lg);
+}
+
+.rounded-xl {
+  border-radius: var(--radius-xl);
+}
+
+.rounded-full {
+  border-radius: var(--radius-full);
+}
+
+/* --------------------------------
+   Stitch custom styles
+---------------------------------*/
+.glass {
+  background: rgba(16, 22, 35, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hero-gradient {
+  background: linear-gradient(
+    180deg,
+    rgba(5, 5, 5, 0) 0%,
+    rgba(5, 5, 5, 1) 90%
+  );
+}
+
 
 /* * {
   background-image: url("image/bg-img.jpg");

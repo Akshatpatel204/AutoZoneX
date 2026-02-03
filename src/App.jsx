@@ -7,6 +7,7 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "./firebase-config.js";
 import { useEffect, useState } from "react";
 import "./app.css";
+import Compare from "./pages/Compare.jsx";
 
 function AppLayout() {
   const location = useLocation();
@@ -42,20 +43,16 @@ function AppLayout() {
 
   return (
     <div
-      className={`min-h-screen ${
-        !isLoginPage
-          ? "bg-[url('image/bg-img.jpg')] bg-cover bg-center"
-          : ""
-      }`}
+      className={`min-h-screen`}
     >
       {/* Navbar only if logged in & not login page */}
-      {!isLoginPage && user && <Navbar user={user} logout={logout} />}
 
+      {!isLoginPage && user && <Navbar user={user} logout={logout} />}
       <Routes>
         <Route path="/login" element={<Login />} />
-
         {/* Protected Routes */}
         <Route path="/" element={user ? <Home /> : <Login />} />
+        <Route path="/compare" element={user ? <Compare/> : <Login />} />
         <Route path="/cars" element={user ? <Cars /> : <Login />} />
       </Routes>
     </div>

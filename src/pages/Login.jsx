@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
     GoogleAuthProvider,
     signInWithPopup,
@@ -11,19 +11,31 @@ import {
 } from "firebase/auth";
 import { auth } from "../firebase-config";
 
-// 🔷 LOGO
-import logo from "../assets/react.svg";
+// const HERO_BG = "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?q=80&w=1920";
+const HERO_BG = "https://lh3.googleusercontent.com/aida-public/AB6AXuDFPK48vmTx1lHj0n4NCF6j_cTK6iL91jM9oco2vW2Ty33O4nbtmvNNFXuT1yZN6DCV3jd9iAGmvJ2uXMj6XRWokZCloNMvyD-Cx-KhHMprsPytkwfx6HuI3X0Pta1VLJgErOCF6rkxJb9oYDEJ2rvD6UfmTSaUhKITmtdM3C9B9jfefi5eVMr3kpq4trTdHqxC8Vcdpya7zezsssHdKxJH6fn4bCU5PxlR_wykwqpxAzhVk3E8rmjDoqCjpjidBE0drE9-ayhTYKgy";
 
+
+function clear_textbox() {
+    setSName('')
+    setSEmail('')
+    setLEmail('')
+    setLPassword('')
+    setSPassword()
+}
 const Login = () => {
     const navigate = useNavigate();
     const provider = new GoogleAuthProvider();
 
-    const [mode, setMode] = useState("login");
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const [isSignup, setIsSignup] = useState(true);
+    const [showPassword, setShowPassword] = useState(false);
 
-    // 🔐 Auto redirect
+    const [sName, setSName] = useState("");
+    const [sEmail, setSEmail] = useState("");
+    const [sPassword, setSPassword] = useState("");
+
+    const [lEmail, setLEmail] = useState("");
+    const [lPassword, setLPassword] = useState("");
+
     useEffect(() => {
         const unsub = onAuthStateChanged(auth, (user) => {
             if (user) navigate("/");
@@ -31,116 +43,121 @@ const Login = () => {
         return () => unsub();
     }, [navigate]);
 
-    // 🔵 Google Login
     const googleLogin = async () => {
         try {
-            await signInWithPopup(auth, provider);
+            const result = await signInWithPopup(auth, provider);
+            localStorage.setItem("userProfile", JSON.stringify(result.user));
+            clear_textbox();
             navigate("/");
         } catch (err) {
             alert(err.message);
         }
     };
 
-    // 🟢 Signup
     const signup = async (e) => {
         e.preventDefault();
-        if (!name || !email || !password) return alert("All fields required");
-
-        const res = await createUserWithEmailAndPassword(auth, email, password);
-        await updateProfile(res.user, { displayName: name });
-        navigate("/");
+        if (!sName || !sEmail || !sPassword) return alert("All fields required");
+        try {
+            const res = await createUserWithEmailAndPassword(auth, sEmail, sPassword);
+            await updateProfile(res.user, { displayName: sName });
+            clear_textbox();
+            navigate("/");
+        } catch (err) {
+            alert(err.message);
+        }
     };
 
-    // 🔵 Login
     const login = async (e) => {
         e.preventDefault();
-        if (!email || !password) return alert("All fields required");
-
-        await signInWithEmailAndPassword(auth, email, password);
-        navigate("/");
+        if (!lEmail || !lPassword) return alert("All fields required");
+        try {
+            await signInWithEmailAndPassword(auth, lEmail, lPassword);
+            clear_textbox();
+            navigate("/");
+        } catch (err) {
+            alert(err.message);
+        }
     };
 
-    // 🔴 Forgot Password
     const forgotPassword = async () => {
-        if (!email) return alert("Enter email first");
-        await sendPasswordResetEmail(auth, email);
+        if (!lEmail) return alert("Enter email first");
+        await sendPasswordResetEmail(auth, lEmail);
         alert("Password reset email sent");
     };
 
     return (
-        <div className="min-h-screen flex bg-[#0b0f1a] text-white">
-            {/* LEFT – BRAND / IMAGE */}
-            <div className="hidden lg:flex w-1/2 relative">
-                <img
-                    src="https://images.unsplash.com/photo-1617814076367-b759c7d7e738"
-                    alt="AutoZoneX Car"
-                    className="absolute inset-0 w-full h-full object-cover"
-                />
+        <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 font-[Inter] text-white">
 
-                <div className="absolute inset-0 bg-gradient-to-tr from-black via-black/70 to-black/30 p-16 flex flex-col justify-between">
-                    {/* LOGO */}
-                    <div className="flex items-center gap-3">
-                        <img src={logo} alt="AutoZoneX" className="h-10 w-auto" />
-                        <span className="text-xl font-extrabold tracking-wide">
-                            AUTOZONEX
-                        </span>
-                    </div>
+            {/* LEFT HERO */}
+            <div
+                className="relative hidden lg:flex flex-col justify-between p-5"
+                style={{
+                    backgroundImage: `linear-gradient(to right, rgba(2,6,23,.9), rgba(2,6,23,.6)), url(${HERO_BG})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                }}
+            >
+                <div className="flex items-center gap-2 text-lg font-bold mt-5">
+                    <span class="material-symbols-outlined text-primary text-4xl">speed</span>
+                    <span style={{ fontFamily: "Orbitron" }}>AUTOZONEX</span>
+                </div>
 
-                    {/* TEXT */}
-                    <div className="max-w-lg space-y-4">
-                        <h1 className="text-5xl font-black leading-tight">
-                            Precision Reviews.
-                            <br />
-                            Premium Performance.
-                        </h1>
-                        <p className="text-gray-300 text-lg">
-                            Join the elite community of automotive enthusiasts. Access
-                            exclusive insights, deep-dive reviews, and premium services.
-                        </p>
-                    </div>
+                <div className="max-w-xl  flex flex-wrap pl-3" style={{ fontFamily: " Inter,sans-serif" }}>
+                    <span className=" font-[5000] leading-tight text-6xl" style={{ fontFamily: " 'Inter',sans-serif" }} >
+                        Precision<br /> Reviews.
+                        <br />
+                        <span className="text-blue-500 italic" style={{ fontFamily: " 'Inter',sans-serif" }}>Premium<br /> Performance.</span>
+                    </span>
+                    <p className="mt-6  text-slate-300" style={{ fontFamily: " 'Inter',sans-serif" }}>
+                        Join the elite community of automotive enthusiasts.
+                        Access exclusive insights, deep-dive reviews, and premium services.
+                    </p>
+                </div>
 
-                    {/* FOOTER */}
-                    <div className="text-sm text-gray-400 flex gap-6">
-                        <span>© 2024 AutoZoneX Inc.</span>
-                        <span className="cursor-pointer hover:text-white">Privacy</span>
-                        <span className="cursor-pointer hover:text-white">Terms</span>
-                    </div>
+                <div className="flex gap-6 text-sm text-slate-400">
+                    <span>© 2024 AutoZoneX Inc.</span>
+                    <Link href="#">Privacy</Link>
+                    <Link href="#">Terms</Link>
                 </div>
             </div>
 
-            {/* RIGHT – AUTH CARD */}
-            <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12">
-                <div className="w-full max-w-md bg-[#0f1629]/90 backdrop-blur-2xl rounded-2xl p-8 sm:p-10 shadow-[0_0_60px_rgba(37,106,244,0.15)] space-y-8">
-                    {/* MOBILE LOGO */}
-                    <div className="lg:hidden flex justify-center">
-                        <img src={logo} alt="AutoZoneX" className="h-10" />
-                    </div>
+            {/* RIGHT FORM */}
+            <div className="flex items-center justify-center bg-[#020617] px-6">
+                <div className="w-full max-w-md space-y-7">
 
-                    {/* HEADER */}
-                    <div className="space-y-2 text-center lg:text-left">
-                        <h2 className="text-3xl font-bold">Welcome Back</h2>
-                        <p className="text-gray-400">
-                            Enter your credentials to access your garage.
+                    <div>
+                        <h2 className="text-3xl font-semibold" style={{ fontFamily: " 'Inter',sans-serif" }}>
+                            {isSignup ? "Create an Account" : "Welcome Back"}
+                        </h2>
+                        <p className="mt-2 text-slate-400" >
+                            {isSignup
+                                ? "Join the ultimate destination for automotive data."
+                                : "Enter your credentials to access your garage."}
                         </p>
                     </div>
 
                     {/* TOGGLE */}
-                    <div className="flex bg-[#1a2340] rounded-xl p-1">
+                    <div className="flex rounded-lg bg-slate-800 p-1 mb-3">
                         <button
-                            onClick={() => setMode("login")}
-                            className={`flex-1 py-2 rounded-lg font-semibold transition ${mode === "login"
-                                ? "bg-[#0f1629] text-white shadow"
-                                : "text-gray-400"
+                            onClick={() => {
+                                setIsSignup(false);
+                                clear_textbox();
+                            }}
+                            className={`flex-1 py-2 rounded-md text-sm ${!isSignup ? "bg-slate-900" : "text-slate-400"
                                 }`}
+                            style={{ fontFamily: " 'Inter',sans-serif" }}
+
                         >
                             Login
                         </button>
                         <button
-                            onClick={() => setMode("signup")}
-                            className={`flex-1 py-2 rounded-lg font-semibold transition ${mode === "signup"
-                                ? "bg-[#0f1629] text-white shadow"
-                                : "text-gray-400"
+                            onClick={() => {
+                                setIsSignup(true);
+                                clear_textbox();
+                            }}
+                            className={`flex-1 py-2 rounded-md text-sm ${isSignup ? "bg-slate-900" : "text-slate-400"
                                 }`}
+                            style={{ fontFamily: " 'Inter',sans-serif" }}
                         >
                             Sign Up
                         </button>
@@ -148,72 +165,116 @@ const Login = () => {
 
                     {/* FORM */}
                     <form
-                        onSubmit={mode === "login" ? login : signup}
+                        onSubmit={isSignup ? signup : login}
                         className="space-y-5"
                     >
-                        {mode === "signup" && (
-                            <input
-                                className="w-full h-12 px-4 rounded-xl bg-[#1a2340] focus:outline-none focus:ring-2 focus:ring-blue-600"
-                                placeholder="Full Name"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                            />
-                        )}
-
-                        <input
-                            className="w-full h-12 px-4 rounded-xl bg-[#1a2340] focus:outline-none focus:ring-2 focus:ring-blue-600"
-                            placeholder="Email Address"
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
-
-                        <input
-                            className="w-full h-12 px-4 rounded-xl bg-[#1a2340] focus:outline-none focus:ring-2 focus:ring-blue-600"
-                            placeholder="Password"
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                        />
-
-                        {mode === "login" && (
-                            <div className="flex justify-between items-center text-sm text-gray-400">
-                                <label className="flex items-center gap-2">
-                                    <input type="checkbox" />
-                                    Keep me signed in
-                                </label>
-                                <span
-                                    onClick={forgotPassword}
-                                    className="text-blue-400 cursor-pointer hover:underline"
-                                >
-                                    Forgot password?
-                                </span>
+                        {isSignup && (
+                            <div className="mt-3">
+                                <label className="block mb-1 text-sm">Username</label>
+                                <input
+                                    value={sName}
+                                    onChange={(e) => setSName(e.target.value)}
+                                    className="w-full px-4 py-3 rounded-lg bg-slate-900 border border-slate-700"
+                                    placeholder="johndoe_99"
+                                />
                             </div>
                         )}
 
-                        <button className="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-xl font-bold transition">
-                            {mode === "login" ? "Sign In →" : "Create Account"}
+                        <div className="mt-3">
+                            <label className="block mb-1 text-sm">Email Address</label>
+                            <input
+                                type="email"
+                                value={isSignup ? sEmail : lEmail}
+                                onChange={(e) =>
+                                    isSignup ? setSEmail(e.target.value) : setLEmail(e.target.value)
+                                }
+                                className="w-full px-4 py-3 rounded-lg bg-slate-900 border border-slate-700"
+                                placeholder="name@example.com"
+                            />
+                        </div>
+
+                        <div className="mt-3">
+                            <label className="block mb-1 text-sm">Password</label>
+                            <div className="relative">
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    value={isSignup ? sPassword : lPassword}
+                                    onChange={(e) =>
+                                        isSignup
+                                            ? setSPassword(e.target.value)
+                                            : setLPassword(e.target.value)
+                                    }
+                                    className="w-full px-4 py-3 rounded-lg bg-slate-900 border border-slate-700 "
+                                    placeholder="*******"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 "
+                                >
+                                    👁
+                                </button>
+                            </div>
+                        </div>
+
+                        {!isSignup && (
+                            <div className="text-right">
+                                <button
+                                    type="button"
+                                    onClick={forgotPassword}
+                                    className="text-sm text-blue-400 hover:underline mt-3"
+                                >
+                                    Forgot password?
+                                </button>
+                            </div>
+                        )}
+
+                        <button className={`w-full py-3 bg-blue-600 rounded-lg font-semibold mt-3 ${isSignup ?'mt-3':''}`}>
+                            {isSignup ? "Create Account →" : "Sign In →"}
                         </button>
                     </form>
 
-                    {/* SOCIAL */}
-                    <div className="space-y-4">
-                        <div className="text-center text-xs text-gray-500">
-                            OR CONTINUE WITH
-                        </div>
-                        <button
-                            onClick={googleLogin}
-                            className="border border-gray-600 py-3 rounded-xl hover:bg-white/5 transition w-full"
-                        >
-                            Google
-                        </button>
+                    <div className="flex items-center gap-3 text-slate-500 text-sm mt-4">
+                        <div className="flex-1 h-px bg-slate-700" />
+                        OR CONTINUE WITH
+                        <div className="flex-1 h-px bg-slate-700" />
                     </div>
 
-                    {/* TERMS */}
-                    <p className="text-xs text-gray-500 text-center">
-                        By continuing, you agree to AutoZoneX’s{" "}
-                        <span className="text-blue-400 cursor-pointer">Terms</span> and{" "}
-                        <span className="text-blue-400 cursor-pointer">Privacy Policy</span>.
+                    {/* GOOGLE */}
+                    <button
+                        onClick={googleLogin}
+                        className="w-full flex items-center justify-center gap-3 py-3 border border-slate-700 rounded-lg mt-4"
+                    >
+                        <img
+                            src="https://www.svgrepo.com/show/475656/google-color.svg"
+                            alt="Google"
+                            className="w-5 h-5"
+                        />
+                        Google
+                    </button>
+
+                    <p className="text-center text-sm text-slate-400 mt-3">
+                        {isSignup ? (
+                            <>
+                                Already have an account?{" "}
+                                <button onClick={() => {
+                                    setIsSignup(false);
+                                    clear_textbox();
+                                }} className="text-blue-400">
+                                    Sign In
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                Don’t have an account?{" "}
+                                <button onClick={() => {
+                                    setIsSignup(true);
+                                    clear_textbox();
+                                }} className="text-blue-400">
+                                    Sign Up
+                                </button>
+                            </>
+                        )}
                     </p>
                 </div>
             </div>
