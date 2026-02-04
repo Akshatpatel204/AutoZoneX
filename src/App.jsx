@@ -6,7 +6,7 @@ import Login from "./pages/Login";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "./firebase-config.js";
 import { useEffect, useState } from "react";
-import "./app.css";
+import './App.css';
 import Compare from "./pages/Compare.jsx";
 
 function AppLayout() {
