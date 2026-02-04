@@ -97,7 +97,7 @@ const Footer = () => {
                   Join
                 </button>
               </div>
-              <div className="flex gap-4 mt-6">
+              <div className="flex gap-4 mt-3">
                 <a
                   className="text-gray-500 hover:text-white transition-colors"
                   href="#"

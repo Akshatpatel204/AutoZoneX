@@ -26,7 +26,7 @@ const Home = () => {
           </h1>
           <div className="glass p-2 rounded-2xl max-w-2xl mx-auto flex items-center gap-2">
             <div className="flex-1 flex items-center px-6 gap-3">
-              <span className="material-symbols-outlined text-gray-400">
+              <span className="material-symbols-outlined text-gray-400 hidden lg:inline">
                 search
               </span>
               <input
@@ -50,7 +50,7 @@ const Home = () => {
               Trending <span className="text-primary">Reviews</span>
             </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  gap-3 mt-3">
             <Car_card />
             <Car_card />
             <Car_card />
