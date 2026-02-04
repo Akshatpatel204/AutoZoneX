@@ -4,7 +4,7 @@ const Footer = () => {
   return (
     <div>
             {/* Footer */}
-      <footer className="bg-card-dark border-t border-white/5 py-12  p-3">
+      <footer className="bg-card-dark border-t border-white/5 py-12  p-3 h-auto">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid md:grid-cols-4 gap-12">
             <div className="col-span-1 md:col-span-1">
@@ -145,3 +145,4 @@ const Footer = () => {
 }
 
 export default Footer
+
