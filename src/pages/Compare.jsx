@@ -16,7 +16,7 @@ const Compare = () => {
                 </div>
 
             </div>
-            <div className="grid xl:grid-cols-3 2xl:grid-cols-5 lg:grid-cols-2  sm:grid-cols-2 grid-cols-1 gap-4 p-2 mb-10">
+            <div className="grid xl:grid-cols-3 2xl:grid-cols-3 lg:grid-cols-2  sm:grid-cols-2 grid-cols-1 gap-4 p-2 mb-10">
                 <Card />
                 <Card />
                 <Card />
