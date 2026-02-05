@@ -29,26 +29,30 @@ const Login = () => {
     const [lEmail, setLEmail] = useState("");
     const [lPassword, setLPassword] = useState("");
 
-    function clear_textbox() {
-        setSName('')
-        setSEmail('')
-        setLEmail('')
-        setLPassword('')
-        setSPassword('')
-    }
-
     useEffect(() => {
         const unsub = onAuthStateChanged(auth, (user) => {
             if (user) navigate("/");
+            setSName("");
+            setSEmail("");
+            setSPassword("");
+            setLEmail("");
+            setLPassword("");
         });
         return () => unsub();
     }, [navigate]);
+
+    useEffect(() => {
+        setSName("");
+        setSEmail("");
+        setSPassword("");
+        setLEmail("");
+        setLPassword("");
+    }, [isSignup]);
 
     const googleLogin = async () => {
         try {
             const result = await signInWithPopup(auth, provider);
             localStorage.setItem("userProfile", JSON.stringify(result.user));
-            clear_textbox();
             navigate("/");
         } catch (err) {
             alert(err.message);
@@ -61,7 +65,6 @@ const Login = () => {
         try {
             const res = await createUserWithEmailAndPassword(auth, sEmail, sPassword);
             await updateProfile(res.user, { displayName: sName });
-            clear_textbox();
             navigate("/");
         } catch (err) {
             alert(err.message);
@@ -73,7 +76,6 @@ const Login = () => {
         if (!lEmail || !lPassword) return alert("All fields required");
         try {
             await signInWithEmailAndPassword(auth, lEmail, lPassword);
-            clear_textbox();
             navigate("/");
         } catch (err) {
             alert(err.message);
@@ -142,7 +144,6 @@ const Login = () => {
                         <button
                             onClick={() => {
                                 setIsSignup(false);
-                                clear_textbox();
                             }}
                             className={`flex-1 py-2 rounded-md text-sm ${!isSignup ? "bg-slate-900" : "text-slate-400"
                                 }`}
@@ -154,7 +155,6 @@ const Login = () => {
                         <button
                             onClick={() => {
                                 setIsSignup(true);
-                                clear_textbox();
                             }}
                             className={`flex-1 py-2 rounded-md text-sm ${isSignup ? "bg-slate-900" : "text-slate-400"
                                 }`}
@@ -260,7 +260,6 @@ const Login = () => {
                                 Already have an account?{" "}
                                 <button onClick={() => {
                                     setIsSignup(false);
-                                    clear_textbox();
                                 }} className="text-blue-400">
                                     Sign In
                                 </button>
@@ -270,7 +269,6 @@ const Login = () => {
                                 Don’t have an account?{" "}
                                 <button onClick={() => {
                                     setIsSignup(true);
-                                    clear_textbox();
                                 }} className="text-blue-400">
                                     Sign Up
                                 </button>
