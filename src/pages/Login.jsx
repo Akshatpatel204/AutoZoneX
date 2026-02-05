@@ -15,13 +15,6 @@ import { auth } from "../firebase-config";
 const HERO_BG = "https://lh3.googleusercontent.com/aida-public/AB6AXuDFPK48vmTx1lHj0n4NCF6j_cTK6iL91jM9oco2vW2Ty33O4nbtmvNNFXuT1yZN6DCV3jd9iAGmvJ2uXMj6XRWokZCloNMvyD-Cx-KhHMprsPytkwfx6HuI3X0Pta1VLJgErOCF6rkxJb9oYDEJ2rvD6UfmTSaUhKITmtdM3C9B9jfefi5eVMr3kpq4trTdHqxC8Vcdpya7zezsssHdKxJH6fn4bCU5PxlR_wykwqpxAzhVk3E8rmjDoqCjpjidBE0drE9-ayhTYKgy";
 
 
-function clear_textbox() {
-    setSName('')
-    setSEmail('')
-    setLEmail('')
-    setLPassword('')
-    setSPassword()
-}
 const Login = () => {
     const navigate = useNavigate();
     const provider = new GoogleAuthProvider();
@@ -35,6 +28,14 @@ const Login = () => {
 
     const [lEmail, setLEmail] = useState("");
     const [lPassword, setLPassword] = useState("");
+
+    function clear_textbox() {
+        setSName('')
+        setSEmail('')
+        setLEmail('')
+        setLPassword('')
+        setSPassword('')
+    }
 
     useEffect(() => {
         const unsub = onAuthStateChanged(auth, (user) => {
@@ -229,7 +230,7 @@ const Login = () => {
                             </div>
                         )}
 
-                        <button className={`w-full py-3 bg-blue-600 rounded-lg font-semibold mt-3 ${isSignup ?'mt-3':''}`}>
+                        <button className={`w-full py-3 bg-blue-600 rounded-lg font-semibold mt-3 ${isSignup ? 'mt-3' : ''}`}>
                             {isSignup ? "Create Account →" : "Sign In →"}
                         </button>
                     </form>
