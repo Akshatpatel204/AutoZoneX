@@ -67,8 +67,8 @@ const styles = {
     },
     contant_box_404: {
         marginTop: '40px',
-        paddingLeft: '40px'
     }
 };
+
 
 export default Error;
