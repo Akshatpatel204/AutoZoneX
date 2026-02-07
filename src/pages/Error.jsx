@@ -70,5 +70,4 @@ const styles = {
     }
 };
 
-
 export default Error;

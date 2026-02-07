@@ -52,7 +52,6 @@ const Login = () => {
     const googleLogin = async () => {
         try {
             const result = await signInWithPopup(auth, provider);
-            localStorage.setItem("userProfile", JSON.stringify(result.user));
             navigate("/");
         } catch (err) {
             alert(err.message);
@@ -74,9 +73,16 @@ const Login = () => {
     const login = async (e) => {
         e.preventDefault();
         if (!lEmail || !lPassword) return alert("All fields required");
+
         try {
-            await signInWithEmailAndPassword(auth, lEmail, lPassword);
-            navigate("/");
+            const res = await signInWithEmailAndPassword(auth, lEmail, lPassword);
+
+            // Check if the UID matches your Admin UID
+            if (res.user.uid === import.meta.env.VITE_admin_uid) {
+                navigate("/admin/home"); // Redirect to Admin Panel
+            } else {
+                navigate("/"); // Redirect to User Home
+            }
         } catch (err) {
             alert(err.message);
         }
@@ -101,7 +107,7 @@ const Login = () => {
                 }}
             >
                 <div className="flex items-center gap-2 text-lg font-bold mt-5">
-                    <span class="material-symbols-outlined text-primary text-4xl">speed</span>
+                    <span className="material-symbols-outlined text-primary text-4xl">speed</span>
                     <span style={{ fontFamily: "Orbitron" }}>AUTOZONEX</span>
                 </div>
 

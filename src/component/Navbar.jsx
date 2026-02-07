@@ -1,7 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { useState } from "react";
 
-const Navbar = ({ user, logout }) => {
+const Navbar = ({ user, logout , admin }) => {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
@@ -19,7 +19,7 @@ const Navbar = ({ user, logout }) => {
     const navLinkClass = ({ isActive }) => 
         `flex items-center justify-center h-full no-underline transition-colors text-sm md:text-[15px] ${
             isActive ? "text-primary font-bold no-underline" : "text-white hover:text-gray-400 no-underline"
-        }`;
+        } ${admin ? 'hidden' : 'block'}`;
 
     return (
         <nav className="bg-[#242424] px-6 md:px-[10%] h-14 flex items-center justify-between relative text-white shadow-md">
@@ -54,7 +54,7 @@ const Navbar = ({ user, logout }) => {
                 shadow-2xl md:shadow-none
             `}>
                 <li className="flex items-center justify-center my-2 md:my-0 md:mx-4 md:h-full w-full md:w-auto pt-3">
-                    <NavLink to="/" className={navLinkClass } onClick={() => setIsMobileNavOpen(false)}>
+                    <NavLink to="/" className={navLinkClass} onClick={() => setIsMobileNavOpen(false)}>
                         Home
                     </NavLink>
                 </li>
@@ -68,7 +68,7 @@ const Navbar = ({ user, logout }) => {
             {/* 4. RIGHT: Profile Icon */}
             <div className="flex flex-1 md:flex-none justify-end items-center h-full">
                 <img 
-                    src={user?.photoURL || "image/profile_icon_30.png"} 
+                    src={user?.photoURL || "/image/profile_icon_30.png"} 
                     alt="Profile" 
                     className="w-8 h-8 rounded-full cursor-pointer hover:ring-2 ring-primary transition-all object-cover block" 
                     onClick={toggleProfile}
@@ -81,7 +81,7 @@ const Navbar = ({ user, logout }) => {
                     
                     {/* User Header: Profile Image & Name */}
                     <div className="flex items-center mb-1">
-                        <img src={user?.photoURL || "image/profile_icon_60.png"} className="w-11 h-11 rounded-full mr-4 object-cover " alt="User" />
+                        <img src={user?.photoURL || "/image/profile_icon_60.png"} className="w-11 h-11 rounded-full mr-4 object-cover " alt="User" />
                         <div className="overflow-hidden">
                             <h3 className="font-bold text-base leading-tight truncate m-0">
                                 {user?.displayName || "Hello Guest"}
@@ -94,13 +94,13 @@ const Navbar = ({ user, logout }) => {
 
                     {/* Email Info */}
                     <div className="flex items-center mb-3 p-1">
-                        <img src="image/mail icon.png" className="w-7 bg-gray-50 p-1.5 rounded-full mr-3 " alt="Email" />
+                        <img src="/image/mail icon.png" className="w-7 bg-gray-50 p-1.5 rounded-full mr-3 " alt="Email" />
                         <p className="text-sm text-gray-600 m-0 truncate no-underline">{user?.email || "No email provided"}</p>
                     </div>
 
                     {/* Phone Info */}
                     <div className="flex items-center mb-3 p-1">
-                        <img src="image/call icon.png" className="w-7 bg-gray-50 p-1.5 rounded-full mr-3" alt="Phone" />
+                        <img src="/image/call icon.png" className="w-7 bg-gray-50 p-1.5 rounded-full mr-3" alt="Phone" />
                         <p className="text-sm text-gray-600 m-0 no-underline">+91 123456789</p>
                     </div>
 
@@ -111,7 +111,7 @@ const Navbar = ({ user, logout }) => {
                         onClick={logout} 
                         className="group flex items-center w-full hover:bg-red-50 p-1 rounded-md transition-all text-left cursor-pointer border-none bg-transparent"
                     >
-                        <img src="image/logout icon.png" className="w-8 bg-gray-100 p-2 rounded-full mr-3 group-hover:bg-red-100" alt="Logout" />
+                        <img src="/image/logout icon.png" className="w-8 bg-gray-100 p-2 rounded-full mr-3 group-hover:bg-red-100" alt="Logout" />
                         <p className="flex-1 text-sm font-medium text-red-600 m-0 no-underline">Logout</p>
                         <span className="text-red-600 group-hover:translate-x-1 transition-transform">&gt;</span>
                     </button>

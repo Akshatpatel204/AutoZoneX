@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, useNavigate, Navigate } from "react-router-dom";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "./firebase-config.js";
 import './App.css';
 import Navbar from "./component/Navbar";
 import Home from "./pages/Home";
-import Cars from "./pages/Cars";
 import Login from "./pages/Login";
 import Compare from "./pages/Compare.jsx";
 import Error from "./pages/Error.jsx";
+import A_home from "./pages/admin/A_home.jsx";
+import Detail from "./pages/detail.jsx";
 
 function AppLayout() {
   const location = useLocation();
@@ -16,17 +17,25 @@ function AppLayout() {
 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // 1. Define your valid paths
-  const validPaths = ["/", "/compare", "/cars", "/login"];
-  
+  const validPaths = ["/", "/compare", "/cars", "/login"  , "/detail", "/admin/home"];
+
   // 2. Determine if we are on a "Not Found" / Error page
   const isErrorPage = !validPaths.includes(location.pathname);
   const isLoginPage = location.pathname === "/login";
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
+      if (currentUser) {
+        setUser(currentUser);
+        // Check if the current user's UID matches the admin UID
+        setIsAdmin(currentUser.uid === import.meta.env.VITE_admin_uid);
+      } else {
+        setUser(null);
+        setIsAdmin(false);
+      }
       setLoading(false);
     });
     return () => unsubscribe();
@@ -35,7 +44,6 @@ function AppLayout() {
   const logout = async () => {
     try {
       await signOut(auth);
-      localStorage.removeItem("userProfile");
       navigate("/login");
     } catch (err) {
       alert("Logout failed");
@@ -47,13 +55,14 @@ function AppLayout() {
   return (
     <div className="min-h-screen">
       {/* 3. Updated Logic: Hide if login page OR if it's an undefined (error) route */}
-      {!isLoginPage && !isErrorPage && user && <Navbar user={user} logout={logout} />}
+      {!isLoginPage && !isErrorPage && user && <Navbar user={user} logout={logout} admin={isAdmin} />}
 
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/" element={user ? <Home /> : <Login />} />
-        <Route path="/compare" element={user ? <Compare /> : <Login />} />
-        <Route path="/cars" element={user ? <Cars /> : <Login />} />
+        <Route path="/" element={ user ? (isAdmin ? <Navigate to="/admin/home" /> : <Home />) : <Login />} />
+        <Route path="/compare" element={ user ? (isAdmin ? <Navigate to="/admin/home" /> : <Compare />) : <Login />} />
+        <Route path="/detail" element={ user ? (isAdmin ? <Navigate to="/admin/home" /> : <Detail/>) : <Login />} />
+        <Route path="/admin/home" element={user && isAdmin ? <A_home /> : <Login />} />
         <Route path="*" element={user ? <Error /> : <Login />} />
       </Routes>
     </div>

@@ -25,10 +25,9 @@ const Compare = () => {
                 <Card />
 
             </div>
-                <Footer />
+            <Footer />
         </div>
     )
 }
 
 export default Compare
-

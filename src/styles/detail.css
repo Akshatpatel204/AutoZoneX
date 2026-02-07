@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+@theme {
+  /* Brand Colors */
+  --color-primary: #0ea5e9;
+  --color-secondary: #2563eb;
+  --color-background-dark: #020617;
+  --color-panel-dark: #0f172a;
+  --color-accent: #22d3ee;
+
+  /* Typography */
+  --font-display: "Orbitron", sans-serif;
+  --font-sans: "Inter", sans-serif;
+  
+  /* Custom Animations */
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@layer utilities {
+  /* The blueprint grid background */
+  .grid-bg {
+    background-image: 
+      linear-gradient(to right, rgba(14, 165, 233, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(14, 165, 233, 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* Cyberpunk neon borders */
+  .neon-border {
+    box-shadow: 0 0 15px rgba(14, 165, 233, 0.2);
+    border: 1px solid rgba(14, 165, 233, 0.4);
+  }
+
+  /* Glowing text effect */
+  .neon-text {
+    text-shadow: 0 0 10px rgba(34, 211, 238, 0.6);
+  }
+
+  /* Frosted glass effect */
+  .glass-panel {
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  /* Custom glow for the status pulse */
+  .glow-primary {
+    filter: drop-shadow(0 0 8px rgba(14, 165, 233, 0.8));
+  }
+}

@@ -1,9 +1,11 @@
 import React from 'react'
+import { useNavigate } from "react-router-dom";
 import Car_card from '../component/Car_card';
-import Card from "../component/Card";
 import Footer from '../component/Footer';
 
 const Home = () => {
+  const navigate = useNavigate();
+
   return (
     <div className='bg-black text-white transition-colors duration-300 font-sans ' >
       {/* Hero Section */}
@@ -51,18 +53,27 @@ const Home = () => {
             </h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  gap-3 mt-3">
-            <Car_card />
-            <Car_card />
-            <Car_card />
-            <Car_card />
-            <Car_card />
-            <Car_card />
+            <div onClick={()=>navigate('/detail')}>
+              <Car_card />
+            </div>
+            <div onClick={()=>navigate('/detail')}>
+              <Car_card />
+            </div>
+            <div onClick={()=>navigate('/detail')}>
+              <Car_card />
+            </div>
+            <div onClick={()=>navigate('/detail')}>
+              <Car_card />
+            </div>
+            <div onClick={()=>navigate('/detail')}>
+              <Car_card />
+            </div>
           </div>
         </section>
         {/* Recent Inspections Slider Area */}
-       
+
       </main>
-      <Footer/>
+      <Footer />
     </div>
   )
 }
