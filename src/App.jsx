@@ -9,7 +9,8 @@ import Login from "./pages/Login";
 import Compare from "./pages/Compare.jsx";
 import Error from "./pages/Error.jsx";
 import A_home from "./pages/admin/A_home.jsx";
-import Detail from "./pages/detail.jsx";
+import Detail from "./pages/Detail.jsx";
+
 
 function AppLayout() {
   const location = useLocation();
@@ -61,7 +62,7 @@ function AppLayout() {
         <Route path="/login" element={<Login />} />
         <Route path="/" element={ user ? (isAdmin ? <Navigate to="/admin/home" /> : <Home />) : <Login />} />
         <Route path="/compare" element={ user ? (isAdmin ? <Navigate to="/admin/home" /> : <Compare />) : <Login />} />
-        <Route path="/detail" element={ user ? (isAdmin ? <Navigate to="/admin/home" /> : <Detail/>) : <Login />} />
+        <Route path="/detail" element={ user ? (isAdmin ? <Navigate to="/admin/home" /> : <Detail />) : <Login />} />
         <Route path="/admin/home" element={user && isAdmin ? <A_home /> : <Login />} />
         <Route path="*" element={user ? <Error /> : <Login />} />
       </Routes>
