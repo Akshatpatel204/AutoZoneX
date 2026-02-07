@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import { Link, useNavigate } from "react-router-dom";
 import {
     GoogleAuthProvider,
@@ -9,7 +10,7 @@ import {
     onAuthStateChanged,
     updateProfile,
 } from "firebase/auth";
-import { auth } from "../firebase-config";
+import { auth, db } from "../firebase-config";
 
 // const HERO_BG = "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?q=80&w=1920";
 const HERO_BG = "https://lh3.googleusercontent.com/aida-public/AB6AXuDFPK48vmTx1lHj0n4NCF6j_cTK6iL91jM9oco2vW2Ty33O4nbtmvNNFXuT1yZN6DCV3jd9iAGmvJ2uXMj6XRWokZCloNMvyD-Cx-KhHMprsPytkwfx6HuI3X0Pta1VLJgErOCF6rkxJb9oYDEJ2rvD6UfmTSaUhKITmtdM3C9B9jfefi5eVMr3kpq4trTdHqxC8Vcdpya7zezsssHdKxJH6fn4bCU5PxlR_wykwqpxAzhVk3E8rmjDoqCjpjidBE0drE9-ayhTYKgy";
@@ -52,11 +53,36 @@ const Login = () => {
     const googleLogin = async () => {
         try {
             const result = await signInWithPopup(auth, provider);
-            navigate("/");
+            const user = result.user;
+
+            const userRef = doc(db, "users", user.uid);
+            const userSnap = await getDoc(userRef);
+
+            // 🔥 Save only if user does NOT already exist
+            if (!userSnap.exists()) {
+                await setDoc(userRef, {
+                    uid: user.uid,
+                    name: user.displayName || "Google User",
+                    email: user.email,
+                    photoURL: user.photoURL || "",
+                    provider: "google",
+                    role: "user",
+                    createdAt: serverTimestamp()
+                });
+            }
+
+            // 🔐 Admin check
+            if (user.uid === import.meta.env.VITE_admin_uid) {
+                navigate("/admin/home");
+            } else {
+                navigate("/");
+            }
+
         } catch (err) {
             alert(err.message);
         }
     };
+
 
     const signup = async (e) => {
         e.preventDefault();
@@ -64,6 +90,17 @@ const Login = () => {
         try {
             const res = await createUserWithEmailAndPassword(auth, sEmail, sPassword);
             await updateProfile(res.user, { displayName: sName });
+
+            // 🔥 Save user to Firestore
+            await setDoc(doc(db, "users", res.user.uid), {
+                uid: res.user.uid,
+                name: sName,
+                email: sEmail,
+                provider: email,
+                role: "user", // 👈 default role
+                createdAt: new Date()
+            });
+
             navigate("/");
         } catch (err) {
             alert(err.message);
