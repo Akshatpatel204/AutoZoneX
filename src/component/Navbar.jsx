@@ -1,7 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { useState } from "react";
 
-const Navbar = ({ user, logout , admin }) => {
+const Navbar = ({ user, logout, admin }) => {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
@@ -16,18 +16,17 @@ const Navbar = ({ user, logout , admin }) => {
     };
 
     // Helper for Route Links: Vertical center, no underline
-    const navLinkClass = ({ isActive }) => 
-        `flex items-center justify-center h-full no-underline transition-colors text-sm md:text-[15px] ${
-            isActive ? "text-primary font-bold no-underline" : "text-white hover:text-gray-400 no-underline"
+    const navLinkClass = ({ isActive }) =>
+        `flex items-center justify-center h-full no-underline transition-colors text-sm md:text-[15px] ${isActive ? "text-primary font-bold no-underline" : "text-white hover:text-gray-400 no-underline"
         } ${admin ? 'hidden' : 'block'}`;
 
     return (
-        <nav className="bg-[#242424] px-6 md:px-[10%] h-14 flex items-center justify-between relative text-white shadow-md">
-            
+        <nav className="bg-[#242424] px-6 md:px-[10%] h-14 flex items-center justify-between relative text-white shadow-md z-[9999]">
+
             {/* 1. LEFT: Hamburger (Mobile) */}
             <div className="flex md:hidden flex-1 items-center h-full">
-                <button 
-                    onClick={toggleMobileNav} 
+                <button
+                    onClick={toggleMobileNav}
                     className="text-2xl focus:outline-none cursor-pointer flex items-center h-full bg-transparent border-none text-white"
                 >
                     <span className="material-symbols-outlined">
@@ -67,10 +66,10 @@ const Navbar = ({ user, logout , admin }) => {
 
             {/* 4. RIGHT: Profile Icon */}
             <div className="flex flex-1 md:flex-none justify-end items-center h-full">
-                <img 
-                    src={user?.photoURL || "/image/profile_icon_30.png"} 
-                    alt="Profile" 
-                    className="w-8 h-8 rounded-full cursor-pointer hover:ring-2 ring-primary transition-all object-cover block" 
+                <img
+                    src={user?.photoURL || "/image/profile_icon_30.png"}
+                    alt="Profile"
+                    className="w-8 h-8 rounded-full cursor-pointer hover:ring-2 ring-primary transition-all object-cover block"
                     onClick={toggleProfile}
                 />
             </div>
@@ -78,7 +77,7 @@ const Navbar = ({ user, logout , admin }) => {
             {/* PROFILE DROPDOWN: Name, Email, Phone, Logout */}
             <div className={`absolute top-full right-4 md:right-[10%] w-72 md:w-80 z-50 overflow-hidden transition-all duration-400 ease-in-out ${isProfileOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0 pointer-events-none"}`}>
                 <div className="bg-white text-[#525252] mt-1 p-4 rounded-lg shadow-2xl">
-                    
+
                     {/* User Header: Profile Image & Name */}
                     <div className="flex items-center mb-1">
                         <img src={user?.photoURL || "/image/profile_icon_60.png"} className="w-11 h-11 rounded-full mr-4 object-cover " alt="User" />
@@ -107,8 +106,8 @@ const Navbar = ({ user, logout , admin }) => {
                     {/* <hr className="border-0 h-[1px] bg-gray-100 my-3" /> */}
 
                     {/* Logout Button */}
-                    <button 
-                        onClick={logout} 
+                    <button
+                        onClick={logout}
                         className="group flex items-center w-full hover:bg-red-50 p-1 rounded-md transition-all text-left cursor-pointer border-none bg-transparent"
                     >
                         <img src="/image/logout icon.png" className="w-8 bg-gray-100 p-2 rounded-full mr-3 group-hover:bg-red-100" alt="Logout" />
