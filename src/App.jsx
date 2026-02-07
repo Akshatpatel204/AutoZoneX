@@ -9,7 +9,7 @@ import Login from "./pages/Login";
 import Compare from "./pages/Compare.jsx";
 import Error from "./pages/Error.jsx";
 import A_home from "./pages/admin/A_home.jsx";
-import Detail from "./pages/Detail.jsx";
+import Detail from "./pages/detail.jsx";
 
 
 function AppLayout() {
