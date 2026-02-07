@@ -8,9 +8,15 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Compare from "./pages/Compare.jsx";
 import Error from "./pages/Error.jsx";
-import A_home from "./pages/admin/A_home.jsx";
+import A_home from "./admin/A_home.jsx";
 import Detail from "./pages/detail.jsx";
 
+// Import Admin Sub-pages
+import Dashboard from "./admin/Dashboard";
+import Inventory from "./admin/Inventory";
+import AddCar from "./admin/AddCar";
+import UsersPage from "./admin/Users";
+import DeleteCar from "./admin/DeleteCar";
 
 function AppLayout() {
   const location = useLocation();
@@ -20,11 +26,15 @@ function AppLayout() {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // 1. Define your valid paths
-  const validPaths = ["/", "/compare", "/cars", "/login"  , "/detail", "/admin/home"];
+  // 1. Define your valid paths for users
+  // const validPaths = ["/", "/compare", "/cars", "/login", "/detail", "/admin", "/admin/inventory", "/admin/add-car", "/admin/users", "/admin/delete-car"];
+  const user_validPaths = ["/", "/compare", "/cars", "/login", "/detail"];
+  const admin_validPaths = ["/admin", "/admin/inventory", "/admin/add-car", "/admin/users", "/admin/delete-car"];
+
+
 
   // 2. Determine if we are on a "Not Found" / Error page
-  const isErrorPage = !validPaths.includes(location.pathname);
+  const isErrorPage = !user_validPaths.includes(location.pathname);
   const isLoginPage = location.pathname === "/login";
 
   useEffect(() => {
@@ -56,14 +66,25 @@ function AppLayout() {
   return (
     <div className="min-h-screen">
       {/* 3. Updated Logic: Hide if login page OR if it's an undefined (error) route */}
-      {!isLoginPage && !isErrorPage && user && <Navbar user={user} logout={logout} admin={isAdmin} />}
+      {!isLoginPage && !isErrorPage && user && <Navbar user={user} logout={logout} />}
 
       <Routes>
+        {/* User rpotes */}
         <Route path="/login" element={<Login />} />
-        <Route path="/" element={ user ? (isAdmin ? <Navigate to="/admin/home" /> : <Home />) : <Login />} />
-        <Route path="/compare" element={ user ? (isAdmin ? <Navigate to="/admin/home" /> : <Compare />) : <Login />} />
-        <Route path="/detail" element={ user ? (isAdmin ? <Navigate to="/admin/home" /> : <Detail />) : <Login />} />
-        <Route path="/admin/home" element={user && isAdmin ? <A_home /> : <Login />} />
+        <Route path="/" element={user ? (isAdmin ? <Navigate to="/admin" /> : <Home />) : <Login />} />
+        <Route path="/compare" element={user ? (isAdmin ? <Navigate to="/admin" /> : <Compare />) : <Login />} />
+        <Route path="/detail" element={user ? (isAdmin ? <Navigate to="/admin" /> : <Detail />) : <Login />} />
+
+        {/* Admin routes */}
+        <Route path="/admin" element={user && isAdmin ? <A_home user={user} logout={logout} /> : <Login />}>
+          <Route index element={<Dashboard />} /> {/* Default: /admin */}
+          <Route path="inventory" element={<Inventory />} /> {/* /admin/inventory */}
+          <Route path="add-car" element={<AddCar />} />
+          <Route path="users" element={<UsersPage />} />
+          <Route path="delete-car" element={<DeleteCar />} />
+        </Route>
+
+        {/* Global routes */}
         <Route path="*" element={user ? <Error /> : <Login />} />
       </Routes>
     </div>

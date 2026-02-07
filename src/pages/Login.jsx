@@ -73,7 +73,7 @@ const Login = () => {
 
             // 🔐 Admin check
             if (user.uid === import.meta.env.VITE_admin_uid) {
-                navigate("/admin/home");
+                navigate("/admin");
             } else {
                 navigate("/");
             }
@@ -116,7 +116,7 @@ const Login = () => {
 
             // Check if the UID matches your Admin UID
             if (res.user.uid === import.meta.env.VITE_admin_uid) {
-                navigate("/admin/home"); // Redirect to Admin Panel
+                navigate("/admin"); // Redirect to Admin Panel
             } else {
                 navigate("/"); // Redirect to User Home
             }

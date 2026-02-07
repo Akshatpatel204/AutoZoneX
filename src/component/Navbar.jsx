@@ -1,7 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { useState } from "react";
 
-const Navbar = ({ user, logout, admin }) => {
+const Navbar = ({ user, logout }) => {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
@@ -18,7 +18,7 @@ const Navbar = ({ user, logout, admin }) => {
     // Helper for Route Links: Vertical center, no underline
     const navLinkClass = ({ isActive }) =>
         `flex items-center justify-center h-full no-underline transition-colors text-sm md:text-[15px] ${isActive ? "text-primary font-bold no-underline" : "text-white hover:text-gray-400 no-underline"
-        } ${admin ? 'hidden' : 'block'}`;
+        } `;
 
     return (
         <nav className="bg-[#242424] px-6 md:px-[10%] h-14 flex items-center justify-between relative text-white shadow-md z-[9999]">
@@ -119,6 +119,5 @@ const Navbar = ({ user, logout, admin }) => {
         </nav>
     );
 };
-
 
 export default Navbar;
