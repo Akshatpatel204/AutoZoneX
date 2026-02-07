@@ -4,40 +4,47 @@ import axios from "axios";
 import {
   Info,
   Settings,
+  Zap,
   Star,
+  Image as ImageIcon,
   PlusCircle,
-  ChevronDown,
+  XCircle,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+  RotateCcw,
 } from "lucide-react";
 
-/* -------------------- INITIAL STATE -------------------- */
+/* ---------------- INITIAL STATE ---------------- */
 
 const initialState = {
   Name: "",
   Engine: "",
   Speed: "",
-  FuelType: "",
+  FuelType: "Gasoline",
   MaxEngineTorque: "",
+  FrontBrakes: "", // Added
+  RearBrakes: "",  // Added
   brand: "",
-  images: ["", "", "", ""],
   price: "",
   knowMore: "",
   Horsepower: "",
   mph: "",
-  speed_mark: 8,
-  comfort_mark: 6,
-  safety_mark: 4,
+  mainImg: "",
+  intImg: "",
+  frontImg: "",
+  rearImg: "",
+  speed_mark: "8",
+  comfort_mark: "6",
+  safety_mark: "4",
 };
 
-/* -------------------- REDUCER -------------------- */
+/* ---------------- REDUCER ---------------- */
 
 function reducer(state, action) {
   switch (action.type) {
-    case "SET_FIELD":
+    case "SET":
       return { ...state, [action.field]: action.value };
-    case "SET_IMAGE":
-      const imgs = [...state.images];
-      imgs[action.index] = action.value;
-      return { ...state, images: imgs };
     case "RESET":
       return initialState;
     default:
@@ -45,216 +52,214 @@ function reducer(state, action) {
   }
 }
 
-/* -------------------- ALERT MODAL -------------------- */
-
-const AlertModal = ({ status, message, onClose }) => {
-  const isSuccess = status >= 200 && status < 300;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* BACKDROP */}
-      <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-md"
-        onClick={onClose}
-      />
-
-      {/* MODAL */}
-      <div className="relative w-[92%] max-w-md bg-[#101c22] border border-[#223c49]
-                      rounded-xl shadow-2xl p-6">
-
-        <div className="flex justify-between items-center mb-4">
-          <span
-            className={`text-sm font-bold ${
-              isSuccess ? "text-green-400" : "text-red-400"
-            }`}
-          >
-            Status : {status}
-          </span>
-
-          <button
-            onClick={onClose}
-            className="text-slate-400 hover:text-white text-lg"
-          >
-            ✕
-          </button>
-        </div>
-
-        <p className="text-slate-300 text-sm">{message}</p>
-
-        <div className="flex justify-end mt-6">
-          <button
-            onClick={onClose}
-            className={`px-6 py-2 rounded-lg font-semibold ${
-              isSuccess
-                ? "bg-green-500 hover:bg-green-600"
-                : "bg-red-500 hover:bg-red-600"
-            }`}
-          >
-            OK
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-/* -------------------- MAIN COMPONENT -------------------- */
-
 const AddCar = () => {
   const navigate = useNavigate();
   const [state, dispatch] = useReducer(reducer, initialState);
-  const [alert, setAlert] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [modal, setModal] = useState(null);
+
+  /* ---------------- VALIDATION ---------------- */
 
   const isValid = () => {
     for (let key in state) {
-      if (Array.isArray(state[key])) {
-        if (state[key].some((v) => v.trim() === "")) return false;
-      } else if (state[key] === "") {
-        return false;
-      }
+      if (
+        ["intImg", "frontImg", "rearImg"].includes(key) // optional
+      )
+        continue;
+      if (!state[key]) return false;
     }
     return true;
   };
+
+  /* ---------------- SUBMIT ---------------- */
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!isValid()) {
-      setAlert({
+      setModal({
         status: 400,
-        message: "Please fill all required fields",
+        message: "Please fill all required fields.",
       });
       return;
     }
 
+    setLoading(true);
+
+    const payload = {
+      Name: state.Name,
+      Engine: state.Engine,
+      Speed: state.Speed,
+      FuelType: state.FuelType,
+      MaxEngineTorque: state.MaxEngineTorque,
+      FrontBrakes: state.FrontBrakes, // Included in payload
+      RearBrakes: state.RearBrakes,   // Included in payload
+      brand: state.brand,
+      images: [
+        state.mainImg,
+        state.intImg,
+        state.frontImg,
+        state.rearImg,
+      ].filter(Boolean),
+      price: state.price,
+      Horsepower: state.Horsepower,
+      mph: state.mph,
+      speed_mark: state.speed_mark,
+      comfort_mark: state.comfort_mark,
+      safety_mark: state.safety_mark,
+      knowMore: state.knowMore
+    };
+
     try {
       const res = await axios.post(
-        `${import.meta.env.VITE_backendapi}/add_car_detail`,
-        state
+        "https://autozonex-backend.onrender.com/add_car_detail",
+        payload
       );
 
-      setAlert({
+      setModal({
         status: res.status,
-        message: res.data.message,
+        message: res.data.message || "Vehicle added successfully",
       });
 
-      if (res.status === 201) {
-        dispatch({ type: "RESET" });
-      }
+      if (res.status === 201) dispatch({ type: "RESET" });
     } catch (err) {
-      setAlert({
+      setModal({
         status: err.response?.status || 500,
         message: err.response?.data?.error || "Server error",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
+  const isSuccess = modal?.status >= 200 && modal?.status < 300;
+
   return (
     <>
-      {alert && (
-        <AlertModal
-          status={alert.status}
-          message={alert.message}
-          onClose={() => setAlert(null)}
-        />
+      {/* ---------------- MODAL ---------------- */}
+      {modal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
+          <div className="w-full max-w-sm bg-[#101c22] border border-[#223c49] rounded-2xl shadow-2xl animate-in zoom-in-95">
+            <div className="flex justify-between items-center p-4 border-b border-[#223c49]">
+              <span
+                className={`text-sm font-bold ${
+                  isSuccess ? "text-green-400" : "text-red-400"
+                }`}
+              >
+                STATUS : {modal.status}
+              </span>
+              <button onClick={() => setModal(null)}>
+                <XCircle className="text-slate-500 hover:text-white" />
+              </button>
+            </div>
+
+            <div className="p-6 text-center">
+              {isSuccess ? (
+                <CheckCircle2 className="mx-auto text-green-400 mb-4" size={56} />
+              ) : (
+                <AlertCircle className="mx-auto text-red-400 mb-4" size={56} />
+              )}
+
+              <p className="text-slate-300 text-sm mb-6">{modal.message}</p>
+
+              <button
+                onClick={() =>
+                  isSuccess ? navigate("/admin") : setModal(null)
+                }
+                className={`w-full py-3 rounded-xl font-bold ${
+                  isSuccess
+                    ? "bg-green-500 hover:bg-green-600"
+                    : "bg-red-500 hover:bg-red-600"
+                }`}
+              >
+                {isSuccess ? "Go to Dashboard" : "Fix Errors"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
-      <div className="max-w-5xl mx-auto w-full text-white">
-        <form onSubmit={handleSubmit} className="space-y-8 pb-20">
+      {/* ---------------- FORM ---------------- */}
 
-          <Section title="Basic Info" icon={<Info size={22} />}>
+      <div className="max-w-5xl mx-auto text-white">
+        <form onSubmit={handleSubmit} className="space-y-6 pb-20">
+          <Section title="Basic Info" icon={<Info />}>
             <Grid>
-              <Input label="Vehicle Name" placeholder="Model S Plaid"
-                value={state.Name}
+              <Input label="Vehicle Name" name="Name" state={state} dispatch={dispatch} />
+              <Select
+                label="Brand"
+                value={state.brand}
                 onChange={(e) =>
-                  dispatch({ type: "SET_FIELD", field: "Name", value: e.target.value })
-                }
-              />
-              <Select label="Brand" value={state.brand}
-                onChange={(e) =>
-                  dispatch({ type: "SET_FIELD", field: "brand", value: e.target.value })
+                  dispatch({ type: "SET", field: "brand", value: e.target.value })
                 }
                 options={["Tesla", "BMW", "Ferrari", "Porsche"]}
               />
-              <Input label="Price" placeholder="120000"
-                value={state.price}
-                onChange={(e) =>
-                  dispatch({ type: "SET_FIELD", field: "price", value: e.target.value })
-                }
-              />
-              <Input label="Know More URL" placeholder="https://example.com"
-                value={state.knowMore}
-                onChange={(e) =>
-                  dispatch({ type: "SET_FIELD", field: "knowMore", value: e.target.value })
-                }
-              />
+              <Input label="Price" name="price" state={state} dispatch={dispatch} />
+              <Input label="Know More URL" name="knowMore" state={state} dispatch={dispatch} />
             </Grid>
           </Section>
 
-          <Section title="Technical Specs" icon={<Settings size={22} />}>
+          <Section title="Technical Specs" icon={<Settings />}>
             <Grid cols="md:grid-cols-3">
-              <Input label="Engine" placeholder="V8 / Electric"
-                value={state.Engine}
+              <Input label="Engine" name="Engine" state={state} dispatch={dispatch} />
+              <Input label="Max Speed" name="Speed" state={state} dispatch={dispatch} />
+              <Input label="Torque" name="MaxEngineTorque" state={state} dispatch={dispatch} />
+              <Input label="Horsepower" name="Horsepower" state={state} dispatch={dispatch} />
+              <Input label="0-60 MPH" name="mph" state={state} dispatch={dispatch} />
+              <Select
+                label="Fuel Type"
+                value={state.FuelType}
                 onChange={(e) =>
-                  dispatch({ type: "SET_FIELD", field: "Engine", value: e.target.value })
+                  dispatch({ type: "SET", field: "FuelType", value: e.target.value })
                 }
+                options={["Gasoline", "Electric", "Hybrid", "Petrol"]}
               />
-              <Input label="Max Speed" placeholder="320 km/h"
-                value={state.Speed}
-                onChange={(e) =>
-                  dispatch({ type: "SET_FIELD", field: "Speed", value: e.target.value })
-                }
-              />
-              <Select label="Fuel Type" value={state.FuelType}
-                onChange={(e) =>
-                  dispatch({ type: "SET_FIELD", field: "FuelType", value: e.target.value })
-                }
-                options={["Petrol", "Diesel", "Electric", "Hybrid"]}
-              />
+              {/* NEW FIELDS ADDED HERE */}
+              <Input label="Front Brakes" name="FrontBrakes" state={state} dispatch={dispatch} />
+              <Input label="Rear Brakes" name="RearBrakes" state={state} dispatch={dispatch} />
             </Grid>
           </Section>
 
-          <Section title="Ratings" icon={<Star size={22} />}>
-            <Slider label="Speed" value={state.speed_mark}
-              onChange={(v) =>
-                dispatch({ type: "SET_FIELD", field: "speed_mark", value: v })
-              }
-            />
-            <Slider label="Comfort" value={state.comfort_mark}
-              onChange={(v) =>
-                dispatch({ type: "SET_FIELD", field: "comfort_mark", value: v })
-              }
-            />
-            <Slider label="Safety" value={state.safety_mark}
-              onChange={(v) =>
-                dispatch({ type: "SET_FIELD", field: "safety_mark", value: v })
-              }
-            />
+          <Section title="Ratings" icon={<Star />}>
+            <Slider label="Speed" name="speed_mark" value={state.speed_mark} dispatch={dispatch} />
+            <Slider label="Comfort" name="comfort_mark" value={state.comfort_mark} dispatch={dispatch} />
+            <Slider label="Safety" name="safety_mark" value={state.safety_mark} dispatch={dispatch} />
+          </Section>
+
+          <Section title="Images" icon={<ImageIcon />}>
+            <Grid>
+              <Input label="Main Image URL" name="mainImg" state={state} dispatch={dispatch} />
+              <Input label="Interior Image URL" name="intImg" state={state} dispatch={dispatch} />
+              <Input label="Front View URL" name="frontImg" state={state} dispatch={dispatch} />
+              <Input label="Rear View URL" name="rearImg" state={state} dispatch={dispatch} />
+            </Grid>
           </Section>
 
           <div className="flex justify-end gap-4">
             <button
               type="button"
-              onClick={() => navigate("/admin")}
-              className="px-6 py-3 border border-[#223c49] rounded-lg"
+              onClick={() => dispatch({ type: "RESET" })}
+              className="flex items-center gap-2 text-slate-400 hover:text-white"
             >
-              Cancel
+              <RotateCcw size={18} /> Reset
             </button>
+
             <button
               type="submit"
-              className="px-8 py-3 bg-[#0da6f2] rounded-lg flex items-center gap-2"
+              disabled={loading}
+              className="px-10 py-4 bg-[#0da6f2] rounded-xl font-bold flex items-center gap-2 disabled:opacity-50"
             >
-              <PlusCircle size={18} /> Submit
+              {loading ? <Loader2 className="animate-spin" /> : <PlusCircle />}
+              {loading ? "Submitting..." : "Submit Vehicle"}
             </button>
           </div>
-
         </form>
       </div>
     </>
   );
 };
 
-/* -------------------- HELPERS -------------------- */
+/* ---------------- HELPERS ---------------- */
 
 const Section = ({ title, icon, children }) => (
   <section className="bg-[#1a2b34]/50 border border-[#223c49] rounded-xl p-6">
@@ -270,15 +275,16 @@ const Grid = ({ children, cols = "md:grid-cols-2" }) => (
   <div className={`grid grid-cols-1 ${cols} gap-6`}>{children}</div>
 );
 
-const Input = ({ label, value, onChange, placeholder }) => (
+const Input = ({ label, name, state, dispatch }) => (
   <div className="flex flex-col gap-2">
     <label className="text-sm text-slate-400">{label}</label>
     <input
-      value={value}
-      onChange={onChange}
-      placeholder={placeholder}
-      className="bg-[#101c22] border border-[#223c49] rounded-lg p-2.5 text-white
-                 placeholder:text-slate-600 outline-none"
+      value={state[name]}
+      onChange={(e) =>
+        dispatch({ type: "SET", field: name, value: e.target.value })
+      }
+      placeholder={`Enter ${label}`}
+      className="bg-[#101c22] border border-[#223c49] rounded-lg p-2.5 text-white outline-none focus:border-[#0da6f2] transition-colors"
     />
   </div>
 );
@@ -286,30 +292,23 @@ const Input = ({ label, value, onChange, placeholder }) => (
 const Select = ({ label, value, onChange, options }) => (
   <div className="flex flex-col gap-2">
     <label className="text-sm text-slate-400">{label}</label>
-    <div className="relative">
-      <select
-        value={value}
-        onChange={onChange}
-        className="w-full bg-[#101c22] border border-[#223c49]
-                   rounded-lg p-2.5 appearance-none"
-      >
-        <option value="">Select</option>
-        {options.map((o) => (
-          <option key={o}>{o}</option>
-        ))}
-      </select>
-      <ChevronDown
-        size={16}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500"
-      />
-    </div>
+    <select
+      value={value}
+      onChange={onChange}
+      className="bg-[#101c22] border border-[#223c49] rounded-lg p-2.5 outline-none focus:border-[#0da6f2] transition-colors"
+    >
+      <option value="">Select</option>
+      {options.map((o) => (
+        <option key={o}>{o}</option>
+      ))}
+    </select>
   </div>
 );
 
-const Slider = ({ label, value, onChange }) => (
-  <div>
-    <div className="flex justify-between mb-2">
-      <span>{label}</span>
+const Slider = ({ label, name, value, dispatch }) => (
+  <div className="mb-4">
+    <div className="flex justify-between mb-1">
+      <span className="text-slate-400">{label}</span>
       <span className="text-[#0da6f2] font-bold">{value}</span>
     </div>
     <input
@@ -317,7 +316,9 @@ const Slider = ({ label, value, onChange }) => (
       min="1"
       max="10"
       value={value}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={(e) =>
+        dispatch({ type: "SET", field: name, value: e.target.value })
+      }
       className="w-full accent-[#0da6f2]"
     />
   </div>
