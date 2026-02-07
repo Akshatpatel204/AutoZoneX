@@ -62,9 +62,9 @@ const Login = () => {
             if (!userSnap.exists()) {
                 await setDoc(userRef, {
                     uid: user.uid,
-                    name: user.displayName || "Google User",
+                    name: user.displayName ,
                     email: user.email,
-                    photoURL: user.photoURL || "",
+                    photoURL: user.photoURL,
                     provider: "google",
                     role: "user",
                     createdAt: serverTimestamp()
@@ -96,7 +96,7 @@ const Login = () => {
                 uid: res.user.uid,
                 name: sName,
                 email: sEmail,
-                provider: email,
+                provider: "email",
                 role: "user", // 👈 default role
                 createdAt: new Date()
             });
