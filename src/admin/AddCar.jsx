@@ -112,7 +112,7 @@ const AddCar = () => {
 
     try {
       const res = await axios.post(
-        "https://autozonex-backend.onrender.com/add_car_detail",
+        `${import.meta.env.VITE_backendapi}/add_car_detail`,
         payload
       );
 
