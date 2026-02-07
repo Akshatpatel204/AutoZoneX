@@ -75,7 +75,7 @@ const Navbar = ({ user, logout, admin }) => {
             </div>
 
             {/* PROFILE DROPDOWN: Name, Email, Phone, Logout */}
-            <div className={`absolute top-full right-4 md:right-[10%] w-72 md:w-80 z-50 overflow-hidden transition-all duration-400 ease-in-out ${isProfileOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0 pointer-events-none"}`}>
+            <div className={`absolute top-full right-4 md:right-[10%] w-72 md:w-80 z-[10000] overflow-hidden transition-all duration-400 ease-in-out ${isProfileOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0 pointer-events-none"}`}>
                 <div className="bg-white text-[#525252] mt-1 p-4 rounded-lg shadow-2xl">
 
                     {/* User Header: Profile Image & Name */}
@@ -119,5 +119,6 @@ const Navbar = ({ user, logout, admin }) => {
         </nav>
     );
 };
+
 
 export default Navbar;
