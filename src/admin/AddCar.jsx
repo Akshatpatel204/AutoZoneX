@@ -36,9 +36,9 @@ const initialState = {
   intImg: "",
   frontImg: "",
   rearImg: "",
-  speed_mark: "80",
-  comfort_mark: "60",
-  safety_mark: "40",
+  speed_mark: "8",
+  comfort_mark: "6",
+  safety_mark: "4",
 };
 
 /* ---------------- REDUCER ---------------- */
@@ -200,7 +200,7 @@ const AddCar = () => {
           </Section>
 
           {/* Ratings */}
-          <Section title="Ratings (0-100)" icon={<Star className="mb-2" />}>
+          <Section title="Ratings (1-10)" icon={<Star className="mb-2" />}>
             <Slider label="Speed Mark" name="speed_mark" value={state.speed_mark} dispatch={dispatch} />
             <Slider label="Comfort Mark" name="comfort_mark" value={state.comfort_mark} dispatch={dispatch} />
             <Slider label="Safety Mark" name="safety_mark" value={state.safety_mark} dispatch={dispatch} />
@@ -286,7 +286,7 @@ const Slider = ({ label, name, value, dispatch }) => (
       <span className="text-[#0da6f2] text-xs font-bold">{value}</span>
     </div>
     <input
-      type="range" min="1" max="100"
+      type="range" min="1" max="10"
       value={value}
       onChange={(e) => dispatch({ type: "SET", field: name, value: e.target.value })}
       className="w-full accent-[#0da6f2] cursor-pointer h-1.5 bg-[#101c22] rounded-lg appearance-none"
