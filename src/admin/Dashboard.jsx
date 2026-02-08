@@ -28,10 +28,10 @@ function Dashboard() {
     return (
         <div className="animate-in fade-in duration-500 ">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                <StatCard label="Total Petrol Car" value="1,452" icon={<Fuel size={14} className="text-[#0da6f2]" />} />
-                <StatCard label="Total Diesel Car" value="842" icon={<Fuel size={14} className="text-amber-500" />} />
-                <StatCard label="Total EV Car" value="248" icon={<Zap size={14} className="text-emerald-400" />} />
-                <StatCard label="Total Users" value="3,120" icon={<Users size={14} className="text-purple-400" />} />
+                <StatCard label="Total Petrol Car" value="1,452" icon={<Fuel size={20} className="text-[#0da6f2] mb-3"/>} />
+                <StatCard label="Total Diesel Car" value="842" icon={<Fuel size={20} className="text-amber-500 mb-3" />} />
+                <StatCard label="Total EV Car" value="248" icon={<Zap size={20} className="text-emerald-400 mb-3" />} />
+                <StatCard label="Total Users" value="3,120" icon={<Users size={20} className="text-purple-400 mb-3" />} />
             </div>
             <h2 className="text-xl font-bold text-white mb-6">Quick Actions</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16 mt-3">
