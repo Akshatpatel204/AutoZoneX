@@ -12,7 +12,6 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
-  RotateCcw,
 } from "lucide-react";
 
 /* ---------------- INITIAL STATE ---------------- */
@@ -24,7 +23,7 @@ const initialState = {
   MaxEngineTorque: "",
   FrontBrakes: "",
   RearBrakes: "",
-  Transmission: "",
+  Transmission: "", // Now filled via text input
   Drivetrain: "",
   brand: "",
   price: "",
@@ -174,12 +173,10 @@ const AddCar = () => {
               <Input label="Max Engine Torque (lb-ft)" name="MaxEngineTorque" state={state} dispatch={dispatch} placeholder="750" />
               <Input label="Horsepower" name="Horsepower" state={state} dispatch={dispatch} placeholder="1020" />
               <Input label="0-60 MPH (sec)" name="mph" state={state} dispatch={dispatch} placeholder="1.99" />
-              <Select
-                label="Transmission"
-                value={state.Transmission}
-                onChange={(e) => dispatch({ type: "SET", field: "Transmission", value: e.target.value })}
-                options={["Automatic", "Manual", "Semi-Automatic", "Dual-Clutch"]}
-              />
+              
+              {/* Transmission changed from Select to Input */}
+              <Input label="Transmission" name="Transmission" state={state} dispatch={dispatch} placeholder="e.g. 7-Speed Dual-Clutch" />
+              
               <Select
                 label="Drivetrain"
                 value={state.Drivetrain}
@@ -287,6 +284,5 @@ const Slider = ({ label, name, value, dispatch }) => (
     />
   </div>
 );
-
 
 export default AddCar;
