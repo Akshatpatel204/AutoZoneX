@@ -66,18 +66,15 @@ function AppLayout() {
   return (
     <div className="min-h-screen">
 
-      {!isAdmin && !user_validPaths.includes(location.pathname) && <Error />}
-      {isAdmin && !admin_validPaths.includes(location.pathname) && <Error />}
-
       {/* 3. Updated Logic: Hide if login page OR if it's an undefined (error) route */}
       {!isLoginPage && !isErrorPage && user && <Navbar user={user} logout={logout} />}
 
       <Routes>
         {/* User rpotes */}
         <Route path="/login" element={<Login />} />
-        <Route path="/" element={user ?  <Home />: <Login />} />
-        <Route path="/compare" element={user ?  <Compare /> : <Login />} />
-        <Route path="/detail" element={user ? <Detail /> : <Login />} />
+        <Route path="/" element={user ? (isAdmin ? <Navigate to="/admin" /> : <Home />) : <Login />} />
+        <Route path="/compare" element={user ? (isAdmin ? <Navigate to="/admin" /> : <Compare />) : <Login />} />
+        <Route path="/detail" element={user ? (isAdmin ? <Navigate to="/admin" /> : <Detail />) : <Login />} />
 
         {/* Admin routes */}
         <Route path="/admin" element={user && isAdmin ? <A_home user={user} logout={logout} /> : <Login />}>
