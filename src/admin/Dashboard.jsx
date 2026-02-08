@@ -26,7 +26,7 @@ function Dashboard() {
     const navigate = useNavigate();
 
     return (
-        <div className="animate-in fade-in duration-500">
+        <div className="animate-in fade-in duration-500 ">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
                 <StatCard label="Total Petrol Car" value="1,452" icon={<Fuel size={14} className="text-[#0da6f2]" />} />
                 <StatCard label="Total Diesel Car" value="842" icon={<Fuel size={14} className="text-amber-500" />} />
