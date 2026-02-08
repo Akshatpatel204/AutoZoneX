@@ -154,7 +154,7 @@ const AddCar = () => {
                 label="Brand"
                 value={state.brand}
                 onChange={(e) => dispatch({ type: "SET", field: "brand", value: e.target.value })}
-                options={["Aston Martin", "Audi", "Bentley", "BMW", "Ferrari", "Koenigsegg", "Lamborghini", "Lexus", "Maserati", "McLaren", "Mercedes", "Pagani", "Porsche", "Tesla"]}
+                options={["Aston Martin", "Audi", "Bentley", "BMW", "Ferrari", "Lamborghini", "Lexus", "Maserati", "McLaren", "Mercedes", "Pagani", "Porsche", "Tesla"]}
               />
               <Input label="Price ($)" name="price" state={state} dispatch={dispatch} placeholder="0.00" />
               <Input label="Know More URL" name="knowMore" state={state} dispatch={dispatch} placeholder="https://..." />
@@ -287,5 +287,6 @@ const Slider = ({ label, name, value, dispatch }) => (
     />
   </div>
 );
+
 
 export default AddCar;
