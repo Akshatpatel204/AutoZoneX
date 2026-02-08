@@ -13,7 +13,6 @@ import {
   AlertCircle,
   Loader2,
   RotateCcw,
-  ChevronDown,
 } from "lucide-react";
 
 /* ---------------- INITIAL STATE ---------------- */
@@ -147,7 +146,7 @@ const AddCar = () => {
       {/* ---------------- FORM ---------------- */}
       <div className="max-w-5xl mx-auto text-white p-2">
         <form onSubmit={handleSubmit} className="space-y-6 pb-20">
-          {/* Basic Info */}
+          
           <Section title="Basic Info" icon={<Info className="mb-2" />}>
             <Grid>
               <Input label="Vehicle Name" name="Name" state={state} dispatch={dispatch} placeholder="e.g. Model S Plaid" />
@@ -162,7 +161,6 @@ const AddCar = () => {
             </Grid>
           </Section>
 
-          {/* Technical Specs */}
           <Section title="Technical Specs" icon={<Settings className="mb-2" />}>
             <Grid cols="md:grid-cols-3">
               <Input label="Engine Type" name="Engine" state={state} dispatch={dispatch} placeholder="V8, Electric, Hybrid..." />
@@ -173,7 +171,7 @@ const AddCar = () => {
                 onChange={(e) => dispatch({ type: "SET", field: "FuelType", value: e.target.value })}
                 options={["Gasoline", "Electric", "Hybrid", "Petrol"]}
               />
-              <Input label="Torque (lb-ft)" name="MaxEngineTorque" state={state} dispatch={dispatch} placeholder="750" />
+              <Input label="Max Engine Torque (lb-ft)" name="MaxEngineTorque" state={state} dispatch={dispatch} placeholder="750" />
               <Input label="Horsepower" name="Horsepower" state={state} dispatch={dispatch} placeholder="1020" />
               <Input label="0-60 MPH (sec)" name="mph" state={state} dispatch={dispatch} placeholder="1.99" />
               <Select
@@ -191,7 +189,6 @@ const AddCar = () => {
             </Grid>
           </Section>
 
-          {/* Chassis Section */}
           <Section title="Chassis" icon={<Zap className="mb-2" />}>
             <Grid>
               <Input label="Front Brakes" name="FrontBrakes" state={state} dispatch={dispatch} placeholder="Carbon Ceramic" />
@@ -199,14 +196,12 @@ const AddCar = () => {
             </Grid>
           </Section>
 
-          {/* Ratings */}
           <Section title="Ratings (1-10)" icon={<Star className="mb-2" />}>
             <Slider label="Speed Mark" name="speed_mark" value={state.speed_mark} dispatch={dispatch} />
             <Slider label="Comfort Mark" name="comfort_mark" value={state.comfort_mark} dispatch={dispatch} />
             <Slider label="Safety Mark" name="safety_mark" value={state.safety_mark} dispatch={dispatch} />
           </Section>
 
-          {/* Image Assets */}
           <Section title="Image Assets" icon={<ImageIcon className="mb-2" />}>
             <Grid>
               <Input label="Main Image URL" name="mainImg" state={state} dispatch={dispatch} placeholder="https://..." />
@@ -263,19 +258,18 @@ const Input = ({ label, name, state, dispatch, placeholder }) => (
 const Select = ({ label, value, onChange, options }) => (
   <div className="flex flex-col gap-1.5">
     <label className="text-xs text-slate-400 font-medium">{label}</label>
-    <div className="relative group">
-      <select
-        value={value}
-        onChange={onChange}
-        className="w-full bg-[#101c22]/50 border border-[#223c49] rounded-lg p-2.5 text-sm text-white outline-none focus:border-[#0da6f2] appearance-none cursor-pointer pr-10"
-      >
-        <option value="">Select Option</option>
-        {options.map((o) => <option key={o} value={o}>{o}</option>)}
-      </select>
-      <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-500 group-focus-within:text-[#0da6f2]">
-        <ChevronDown size={16} />
-      </div>
-    </div>
+    <select
+      value={value}
+      onChange={onChange}
+      className="w-full bg-[#101c22]/50 border border-[#223c49] rounded-lg p-2.5 text-sm text-white outline-none focus:border-[#0da6f2] cursor-pointer"
+    >
+      <option value="" className="bg-[#101c22] text-white">Select Option</option>
+      {options.map((o) => (
+        <option key={o} value={o} className="bg-[#101c22] text-white">
+          {o}
+        </option>
+      ))}
+    </select>
   </div>
 );
 
