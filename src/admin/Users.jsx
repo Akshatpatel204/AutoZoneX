@@ -170,7 +170,7 @@ const Users = () => {
   if (loading) return <div className="h-screen flex items-center justify-center text-[#0da6f2]"><Loader2 className="animate-spin" size={40} /></div>;
 
   return (
-    <div className="h-screen flex flex-col p-4 animate-in fade-in duration-500 relative bg-[#020617]">
+    <div className="h-screen flex flex-col p-4 animate-in fade-in duration-500 relative">
       {selectedUser && <UserDetailsModal user={selectedUser} onClose={() => setSelectedUser(null)} />}
 
       <div className="hidden md:flex items-center justify-between px-6 mb-6 mt-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest opacity-60">
@@ -213,5 +213,6 @@ const Users = () => {
     </div>
   );
 };
+
 
 export default Users;
