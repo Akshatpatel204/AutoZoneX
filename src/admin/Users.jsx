@@ -28,7 +28,7 @@ const UserDetailsModal = ({ user, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-in fade-in duration-200">
-      <div className="bg-[#16252d] w-full max-w-[380px] h-[480px] rounded-[2.5rem] border border-white/10 shadow-2xl relative overflow-hidden p-8 flex flex-col items-center">
+      <div className="bg-[#16252d] w-full max-w-[380px] h-[520px] rounded-[2.5rem] border border-white/10 shadow-2xl relative overflow-hidden p-8 flex flex-col items-center">
         
         <button onClick={onClose} className="absolute top-6 right-6 text-slate-500 hover:text-white transition-colors">
           <X size={22} />
@@ -81,14 +81,13 @@ const UserDetailsModal = ({ user, onClose }) => {
             </div>
 
             <div className="flex items-center gap-4">
-                {/* Updated Auth Method Icon to Fingerprint */}
                 <div className="size-9 rounded-xl bg-white/5 flex items-center justify-center text-slate-400">
                     <Fingerprint size={16} />
                 </div>
                 <div className="flex flex-col">
                     <span className="text-[9px] uppercase text-slate-500 font-bold tracking-widest">Auth Method</span>
                     <div className="flex items-center gap-1.5">
-                      <span className="text-sm text-slate-200 capitalize">{user.provider}</span>
+                      <span className="text-sm text-slate-200 capitalize">{user.provider} account</span>
                       {user.provider === 'google' ? <Chrome size={12} className="text-[#0da6f2]" /> : <Key size={12} className="text-slate-500" />}
                     </div>
                 </div>
@@ -140,13 +139,21 @@ const Users = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const itemsPerPage = 8;
 
+  // Get Admin ID from env
+  const adminUid = import.meta.env.VITE_admin_uid;
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const coll = collection(db, "users");
         const q = query(coll, orderBy("createdAt", "desc"));
         const querySnapshot = await getDocs(q);
-        const usersList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        // Map data and filter out the admin UID
+        const usersList = querySnapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .filter(user => user.uid !== adminUid); // EXCLUDE ADMIN
+          
         setAllUsers(usersList);
       } catch (err) { 
         console.error(err); 
@@ -155,7 +162,7 @@ const Users = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [adminUid]);
 
   const totalPages = Math.ceil(allUsers.length / itemsPerPage);
   const currentUsers = allUsers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -175,9 +182,13 @@ const Users = () => {
       </div>
 
       <div className="flex-1 overflow-y-auto no-scrollbar">
-        {currentUsers.map((user) => (
-          <UserRow key={user.id} user={user} onInfoClick={setSelectedUser} />
-        ))}
+        {currentUsers.length > 0 ? (
+          currentUsers.map((user) => (
+            <UserRow key={user.id} user={user} onInfoClick={setSelectedUser} />
+          ))
+        ) : (
+          <div className="text-center text-slate-500 mt-20">No users found.</div>
+        )}
       </div>
 
       {totalPages > 1 && (
