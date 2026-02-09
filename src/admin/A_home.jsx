@@ -1,17 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { 
-  Car, LayoutDashboard, Package, Users, Menu, X, LogOut, User, PlusSquare, FileX 
+  Car, LayoutDashboard, Package, Users, Menu, X, LogOut, User, PlusSquare, FileX, AlertCircle 
 } from 'lucide-react';
-
 
 const A_home = ({ user, logout }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false); // New state for popup
   const profileRef = useRef(null);
   const location = useLocation();
 
-  // Map pathnames to titles for the header
   const getHeaderTitle = () => {
     const path = location.pathname;
     if (path === "/admin" || path === "/admin/") return "Dashboard";
@@ -31,13 +30,50 @@ const A_home = ({ user, logout }) => {
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow = isMobileMenuOpen ? 'hidden' : 'unset';
-  }, [isMobileMenuOpen]);
+    document.body.style.overflow = (isMobileMenuOpen || showLogoutConfirm) ? 'hidden' : 'unset';
+  }, [isMobileMenuOpen, showLogoutConfirm]);
 
   return (
-    <div className=" flex h-screen  bg-[#0a1114] text-white font-sans">
+    <div className="flex h-screen bg-[#0a1114] text-white font-sans overflow-hidden">
       
-      {/* Sidebar - Kept w-70 and your specific icon size */}
+      {/* --- LOGOUT CONFIRMATION POPUP --- */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300"
+            onClick={() => setShowLogoutConfirm(false)}
+          ></div>
+          
+          {/* Modal Content */}
+          <div className="relative bg-[#16252d] border border-white/10 w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex flex-col items-center text-center">
+              <div className="size-16 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 mb-4">
+                <AlertCircle size={32} />
+              </div>
+              <h3 className="text-xl font-bold mb-2">Confirm Logout</h3>
+              <p className="text-slate-400 text-sm mb-8">Are you sure you want to sign out? You will need to login again to access the admin panel.</p>
+              
+              <div className="flex gap-3 w-full">
+                <button 
+                  className="flex-1 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold transition-all border border-white/5 active:scale-95"
+                  onClick={() => setShowLogoutConfirm(false)}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="flex-1 py-3 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold transition-all shadow-lg shadow-red-500/20 active:scale-95"
+                  onClick={logout}
+                >
+                  Sign Out
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sidebar */}
       <aside className="hidden lg:flex w-70 bg-[#101d23] border-r border-white/5 flex-col p-6 gap-8">
         <div className="flex items-center gap-3">
           <div className="bg-[#0da6f2] size-10 rounded-lg flex items-center justify-center shadow-lg shadow-[#0da6f2]/30">
@@ -54,7 +90,7 @@ const A_home = ({ user, logout }) => {
         </nav>
       </aside>
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-[100] bg-[#0a1114] flex flex-col p-6 lg:hidden">
           <div className="flex items-center justify-between mb-8">
@@ -81,12 +117,11 @@ const A_home = ({ user, logout }) => {
             <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-2 -ml-2 hover:bg-white/5 rounded-lg transition-all">
               <Menu size={28} />
             </button>
-            <h2 className="text-lg md:text-xl font-bold">{getHeaderTitle()} </h2>
+            <h2 className="text-lg md:text-xl font-bold">{getHeaderTitle()}</h2>
           </div>
 
           <div className="relative" ref={profileRef}>
             <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setIsProfileOpen(!isProfileOpen)}>
-              {/* mt-3 as per your minor changes */}
               <div className="text-right leading-none hidden sm:block">
                 <p className="text-sm font-bold group-hover:text-[#0da6f2] transition-colors mt-3">{user?.displayName || "Hello ADMIN"}</p>
               </div>
@@ -99,20 +134,28 @@ const A_home = ({ user, logout }) => {
               <div className="absolute right-0 top-14 w-64 bg-[#16252d] border border-white/10 rounded-2xl shadow-2xl p-4 animate-in zoom-in-95 z-50">
                 <div className="flex items-center gap-3 pb-4 mb-3 border-b border-white/5">
                    <div className="size-10 rounded-full bg-[#0da6f2]/20 flex items-center justify-center text-[#0da6f2]"><User size={20}/></div>
-                   {/* pt-3 as per your minor changes */}
                    <div className="min-w-0 font-bold">
                      <p className="text-sm truncate text-white pt-3">{user?.displayName || "Hello ADMIN"}</p>
                    </div>
                 </div>
                 <div className="p-2 bg-white/5 rounded-lg text-[11px] text-slate-400 truncate mb-2">{user?.email || "No email provided"}</div>
-                <button className="w-full flex items-center gap-2 p-2 text-sm text-red-400 hover:bg-red-500/10 rounded-lg font-bold transition-all" onClick={logout} ><LogOut size={16}/> Sign Out</button>
+                
+                {/* Updated Sign Out button to trigger popup */}
+                <button 
+                  className="w-full flex items-center gap-2 p-2 text-sm text-red-400 hover:bg-red-500/10 rounded-lg font-bold transition-all" 
+                  onClick={() => {
+                    setShowLogoutConfirm(true);
+                    setIsProfileOpen(false);
+                  }}
+                >
+                  <LogOut size={16}/> Sign Out
+                </button>
               </div>
             )}
           </div>
         </header>
 
         <div className="p-6 lg:p-10 max-w-7xl mx-auto w-full">
-          {/* This is where the sub-routes (Dashboard, Inventory, etc.) will render */}
           <Outlet />
         </div>
       </main>
@@ -120,7 +163,6 @@ const A_home = ({ user, logout }) => {
   );
 };
 
-/* --- Custom SidebarLink using NavLink --- */
 const SidebarLink = ({ to, icon, label, end }) => (
   <NavLink 
     to={to} 
@@ -134,7 +176,6 @@ const SidebarLink = ({ to, icon, label, end }) => (
   </NavLink>
 );
 
-/* --- Custom MobileLink using NavLink --- */
 const MobileLink = ({ to, label, onClick, end }) => (
   <NavLink 
     to={to} 
