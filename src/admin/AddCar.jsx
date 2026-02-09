@@ -87,9 +87,7 @@ const AddCar = () => {
         state.intImg,
         state.frontImg,
         state.rearImg,
-      ].filter(Boolean),
-      u_id: "ADMIN_01",
-      u_Name: "AutoZoneX_Admin",
+      ].filter(Boolean)
     };
 
     try {
