@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { collection, query, where, getCountFromServer } from "firebase/firestore";
 import { db } from "../firebase-config";
 import { Fuel, Zap, Users, PlusCircle, ListPlus, Trash2, Loader2 } from 'lucide-react';
+import axios from 'axios';
 
 const StatCard = ({ label, value, icon, loading }) => (
     <div className="bg-[#16252d] p-6 rounded-xl border border-white/5 shadow-sm">
@@ -11,7 +12,7 @@ const StatCard = ({ label, value, icon, loading }) => (
             <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest leading-none">{label}</p>
         </div>
         {loading ? (
-            <Loader2 size={20} className="animate-spin text-slate-600 mt-2" />
+            <Loader2 size={20} className="animate-spin text-[#0da6f2] mt-2" />
         ) : (
             <h3 className="text-3xl font-bold text-white">{value}</h3>
         )}
@@ -31,46 +32,75 @@ const ActionCard = ({ icon, title, desc, accentColor }) => (
 
 function Dashboard() {
     const navigate = useNavigate();
-    const [userCount, setUserCount] = useState(0);
+    const [counts, setCounts] = useState({
+        petrol: 0,
+        diesel: 0,
+        ev: 0,
+        users: 0
+    });
     const [loading, setLoading] = useState(true);
 
-    // Get Admin ID from env
     const adminId = import.meta.env.VITE_admin_uid; 
+    const API_BASE = import.meta.env.VITE_backendapi;
 
     useEffect(() => {
-        const fetchUserCount = async () => {
+        const fetchAllStats = async () => {
+            setLoading(true);
             try {
+                // 1. Fetch User Count from Firebase
                 const coll = collection(db, "users");
+                const userQ = query(coll, where("uid", "!=", adminId));
+                const userSnapshot = await getCountFromServer(userQ);
                 
-                // Query to exclude the admin ID
-                // Note: 'uid' should match the field name in your Firestore documents
-                const q = query(coll, where("uid", "!=", adminId));
-                
-                const snapshot = await getCountFromServer(q);
-                setUserCount(snapshot.data().count);
+                // 2. Fetch Car Counts from MongoDB via your new API
+                // We run these in parallel for better performance
+                const [petrolRes, dieselRes, evRes] = await Promise.all([
+                    axios.get(`${API_BASE}/api/cars/filter?fuel=Petrol`),
+                    axios.get(`${API_BASE}/api/cars/filter?fuel=Diesel`),
+                    axios.get(`${API_BASE}/api/cars/filter?fuel=Electric`)
+                ]);
+
+                setCounts({
+                    users: userSnapshot.data().count,
+                    petrol: petrolRes.data["data :- "].length,
+                    diesel: dieselRes.data["data :- "].length,
+                    ev: evRes.data["data :- "].length,
+                });
+
             } catch (error) {
-                console.error("Error fetching user count:", error);
-                // Fallback: If '!=' query fails due to missing index, 
-                // you might need to create the index in Firebase console.
+                console.error("Error fetching dashboard stats:", error);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchUserCount();
-    }, [adminId]);
+        fetchAllStats();
+    }, [adminId, API_BASE]);
 
     return (
         <div className="animate-in fade-in duration-500">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                <StatCard label="Total Petrol Car" value="1,452" icon={<Fuel size={20} className="text-[#0da6f2] mb-3"/>} />
-                <StatCard label="Total Diesel Car" value="842" icon={<Fuel size={20} className="text-amber-500 mb-3" />} />
-                <StatCard label="Total EV Car" value="248" icon={<Zap size={20} className="text-emerald-400 mb-3" />} />
-                
-                {/* Updated Total Users Card */}
+                <StatCard 
+                    label="Total Petrol Car" 
+                    value={counts.petrol} 
+                    loading={loading}
+                    icon={<Fuel size={20} className="text-[#0da6f2] mb-3"/>} 
+                />
+                <StatCard 
+                    label="Total Diesel Car" 
+                    value={counts.diesel} 
+                    loading={loading}
+                    icon={<Fuel size={20} className="text-amber-500 mb-3" />} 
+                />
+                <StatCard 
+                    label="Total EV Car" 
+                    value={counts.ev} 
+                    loading={loading}
+                    icon={<Zap size={20} className="text-emerald-400 mb-3" />} 
+                />
                 <StatCard 
                     label="Total Users" 
-                    value={userCount.toLocaleString()} 
+                    value={counts.users} 
                     loading={loading}
                     icon={<Users size={20} className="text-purple-400 mb-3" />} 
                 />
