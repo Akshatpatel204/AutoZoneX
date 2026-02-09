@@ -9,15 +9,18 @@ import { useNavigate } from 'react-router-dom';
 const CarRow = ({ car, onInfoClick }) => {
   const [imgError, setImgError] = useState(false);
 
+  // Accessing the first image from the array as per your schema
+  const displayImage = car.images && car.images.length > 0 ? car.images[0] : null;
+
   return (
     <div className="bg-[#16252d] p-4 rounded-2xl border border-white/5 flex items-center justify-between group hover:border-[#0da6f2]/30 transition-all mb-3 shadow-sm">
       
-      {/* 1st Column: Main Image */}
+      {/* 1st Column: Main Image (Index 0) */}
       <div className="w-[20%] md:w-[10%] flex items-center">
         <div className="size-12 md:size-14 rounded-xl bg-[#101c22] border border-white/5 overflow-hidden flex items-center justify-center shadow-inner">
-          {car.image && !imgError ? (
+          {displayImage && !imgError ? (
             <img 
-              src={car.image} 
+              src={displayImage} 
               alt="car" 
               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
               onError={() => setImgError(true)}
@@ -28,25 +31,25 @@ const CarRow = ({ car, onInfoClick }) => {
         </div>
       </div>
 
-      {/* 2nd Column: Name */}
+      {/* 2nd Column: Name (Schema: Name) */}
       <div className="flex-1 md:w-[25%] flex flex-col justify-center px-4">
-        <h4 className="font-bold text-white text-sm truncate">{car.name}</h4>
+        <h4 className="font-bold text-white text-sm truncate">{car.Name}</h4>
         <div className="flex items-center gap-1.5 text-slate-500 text-[9px] font-medium uppercase tracking-tighter">
             <Hash size={10} /> {car._id?.slice(-8)}
         </div>
       </div>
 
-      {/* 3rd Column: Brand (Hidden on Mobile) */}
+      {/* 3rd Column: Brand (Schema: brand) */}
       <div className="hidden md:flex items-center w-[20%] text-slate-400 text-xs font-semibold">
         <span className="bg-white/5 px-2.5 py-1 rounded-lg border border-white/5">
             {car.brand}
         </span>
       </div>
 
-      {/* 4th Column: Fuel (Hidden on Mobile) */}
+      {/* 4th Column: Fuel (Schema: FuelType) */}
       <div className="hidden lg:flex items-center gap-2 w-[20%] text-[#0da6f2] opacity-80">
         <Fuel size={16} />
-        <span className="text-xs font-medium capitalize">{car.fuelType || 'Petrol'}</span>
+        <span className="text-xs font-medium capitalize">{car.FuelType || 'N/A'}</span>
       </div>
 
       {/* 5th Column: Info Button */}
@@ -73,11 +76,9 @@ const Inventory = () => {
   useEffect(() => {
     const fetchCars = async () => {
       try {
-        // Using the remembered backend API environment variable
         const response = await fetch(`${import.meta.env.VITE_backendapi}/fetch_all_car`);
         const result = await response.json();
         
-        // Accessing data based on your server-side "data :- " key
         if (result["data :- "]) {
           setAllCars(result["data :- "]);
         }
@@ -91,7 +92,7 @@ const Inventory = () => {
   }, []);
 
   const filteredCars = allCars.filter(car => 
-    car.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    car.Name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     car.brand?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -111,7 +112,7 @@ const Inventory = () => {
   return (
     <div className="h-screen flex flex-col p-4 md:p-6 animate-in fade-in duration-500 relative">
       
-      {/* Header section with dynamic layout */}
+      {/* Header */}
       <div className="flex items-center justify-between gap-4 mb-6">
         <div className="relative flex-1 md:max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
@@ -133,7 +134,7 @@ const Inventory = () => {
         </button>
       </div>
 
-      {/* Table headers (Hidden on mobile) */}
+      {/* Row Titles */}
       <div className="hidden md:flex items-center justify-between px-6 mb-4 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] opacity-60">
         <span className="w-[10%]">Image</span>
         <span className="w-[25%] px-4">Model Name</span>
@@ -142,6 +143,7 @@ const Inventory = () => {
         <span className="w-[15%] text-right">Details</span>
       </div>
 
+      {/* List */}
       <div className="flex-1 overflow-y-auto no-scrollbar">
         {currentCars.length > 0 ? (
           currentCars.map((car) => (
@@ -160,25 +162,27 @@ const Inventory = () => {
       </div>
 
       {/* Pagination Controls */}
-      <div className="py-6 flex items-center justify-center gap-3">
-        <button 
-          disabled={currentPage === 1} 
-          onClick={() => setCurrentPage(prev => prev - 1)}
-          className="p-2 rounded-lg bg-[#16252d] text-slate-400 disabled:opacity-20 hover:text-[#0da6f2] transition-colors border border-white/5"
-        >
-          <ChevronLeft size={20} />
-        </button>
-        <span className="text-[10px] font-bold text-slate-500 tracking-widest uppercase bg-[#16252d] px-4 py-2 rounded-lg border border-white/5">
-          Page {currentPage} / {totalPages || 1}
-        </span>
-        <button 
-          disabled={currentPage >= totalPages} 
-          onClick={() => setCurrentPage(prev => prev + 1)}
-          className="p-2 rounded-lg bg-[#16252d] text-slate-400 disabled:opacity-20 hover:text-[#0da6f2] transition-colors border border-white/5"
-        >
-          <ChevronRight size={20} />
-        </button>
-      </div>
+      {filteredCars.length > itemsPerPage && (
+        <div className="py-6 flex items-center justify-center gap-3">
+          <button 
+            disabled={currentPage === 1} 
+            onClick={() => setCurrentPage(prev => prev - 1)}
+            className="p-2 rounded-lg bg-[#16252d] text-slate-400 disabled:opacity-20 hover:text-[#0da6f2] transition-colors border border-white/5"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <span className="text-[10px] font-bold text-slate-500 tracking-widest uppercase bg-[#16252d] px-4 py-2 rounded-lg border border-white/5">
+            Page {currentPage} / {totalPages}
+          </span>
+          <button 
+            disabled={currentPage >= totalPages} 
+            onClick={() => setCurrentPage(prev => prev + 1)}
+            className="p-2 rounded-lg bg-[#16252d] text-slate-400 disabled:opacity-20 hover:text-[#0da6f2] transition-colors border border-white/5"
+          >
+            <ChevronRight size={20} />
+          </button>
+        </div>
+      )}
     </div>
   );
 };
