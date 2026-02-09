@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
+  RotateCcw, // Added for the Reset icon
 } from "lucide-react";
 
 /* ---------------- INITIAL STATE ---------------- */
@@ -23,7 +24,7 @@ const initialState = {
   MaxEngineTorque: "",
   FrontBrakes: "",
   RearBrakes: "",
-  Transmission: "", // Now filled via text input
+  Transmission: "",
   Drivetrain: "",
   brand: "",
   price: "",
@@ -171,10 +172,7 @@ const AddCar = () => {
               <Input label="Max Engine Torque (lb-ft)" name="MaxEngineTorque" state={state} dispatch={dispatch} placeholder="750" />
               <Input label="Horsepower" name="Horsepower" state={state} dispatch={dispatch} placeholder="1020" />
               <Input label="0-60 MPH (sec)" name="mph" state={state} dispatch={dispatch} placeholder="1.99" />
-              
-              {/* Transmission changed from Select to Input */}
               <Input label="Transmission" name="Transmission" state={state} dispatch={dispatch} placeholder="e.g. 7-Speed Dual-Clutch" />
-              
               <Select
                 label="Drivetrain"
                 value={state.Drivetrain}
@@ -207,11 +205,20 @@ const AddCar = () => {
           </Section>
 
           <div className="flex justify-end gap-4">
-            <button type="button" onClick={() => dispatch({ type: "RESET" })} className="px-8 py-3 rounded-xl border border-[#223c49] text-white hover:bg-white/5 transition-all">Cancel</button>
+            {/* REMOVED CANCEL - ADDED RESET BUTTON */}
+            <button 
+              type="button" 
+              onClick={() => dispatch({ type: "RESET" })} 
+              className="px-6 py-3 rounded-xl border border-yellow-500/30 text-yellow-500 hover:bg-yellow-500/10 transition-all flex items-center gap-2 font-bold"
+            >
+              <RotateCcw size={18} />
+              Reset Form
+            </button>
+
             <button
               type="submit"
               disabled={loading}
-              className="px-10 py-3 bg-[#0da6f2] rounded-xl font-bold flex items-center gap-2 hover:brightness-110 disabled:opacity-50"
+              className="px-10 py-3 bg-[#0da6f2] rounded-xl font-bold flex items-center gap-2 hover:brightness-110 disabled:opacity-50 transition-all active:scale-95"
             >
               {loading ? <Loader2 className="animate-spin" /> : <PlusCircle size={18}/>}
               {loading ? "Submitting..." : "Submit Vehicle"}
