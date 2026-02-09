@@ -4,6 +4,7 @@ import {
   Car, LayoutDashboard, Package, Users, Menu, X, LogOut, User, PlusSquare, FileX 
 } from 'lucide-react';
 
+
 const A_home = ({ user, logout }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -34,7 +35,7 @@ const A_home = ({ user, logout }) => {
   }, [isMobileMenuOpen]);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#0a1114] text-white font-sans">
+    <div className=" flex h-screen  bg-[#0a1114] text-white font-sans">
       
       {/* Sidebar - Kept w-70 and your specific icon size */}
       <aside className="hidden lg:flex w-70 bg-[#101d23] border-r border-white/5 flex-col p-6 gap-8">
@@ -74,7 +75,7 @@ const A_home = ({ user, logout }) => {
       )}
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col overflow-y-auto relative">
+      <main className="mainContentArea flex-1 flex flex-col overflow-y-auto relative no-scrollbar">
         <header className="h-20 flex-shrink-0 flex items-center justify-between px-6 lg:px-10 border-b border-white/5 bg-[#0a1114]/50 backdrop-blur-md sticky top-0 z-40">
           <div className="flex items-center gap-4">
             <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-2 -ml-2 hover:bg-white/5 rounded-lg transition-all">

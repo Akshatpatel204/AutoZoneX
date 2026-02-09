@@ -72,7 +72,7 @@ function AppLayout() {
       <Routes>
         {/* User rpotes */}
         <Route path="/login" element={<Login />} />
-        <Route path="/" element={user ? (isAdmin ? <Navigate to="/admin" /> : <Home />) : <Login />} />
+       <Route path="/" element={user ? (isAdmin ? <Navigate to="/admin" /> : <Home />) : <Login />} />
         <Route path="/compare" element={user ? (isAdmin ? <Navigate to="/admin" /> : <Compare />) : <Login />} />
         <Route path="/detail" element={user ? (isAdmin ? <Navigate to="/admin" /> : <Detail />) : <Login />} />
 

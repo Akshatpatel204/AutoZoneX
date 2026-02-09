@@ -1,13 +1,20 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
-import { Fuel, Zap, Users, PlusCircle, ListPlus, Trash2 } from 'lucide-react';
+import { collection, query, where, getCountFromServer } from "firebase/firestore";
+import { db } from "../firebase-config";
+import { Fuel, Zap, Users, PlusCircle, ListPlus, Trash2, Loader2 } from 'lucide-react';
 
-const StatCard = ({ label, value, icon }) => (
-    <div className="bg-[#16252d] p-6 rounded-xl border border-white/5">
+const StatCard = ({ label, value, icon, loading }) => (
+    <div className="bg-[#16252d] p-6 rounded-xl border border-white/5 shadow-sm">
         <div className="flex items-center gap-2 mb-2">
-            {icon} <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest leading-none">{label}</p>
+            {icon} 
+            <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest leading-none">{label}</p>
         </div>
-        <h3 className="text-3xl font-bold text-white">{value}</h3>
+        {loading ? (
+            <Loader2 size={20} className="animate-spin text-slate-600 mt-2" />
+        ) : (
+            <h3 className="text-3xl font-bold text-white">{value}</h3>
+        )}
     </div>
 );
 
@@ -24,29 +31,65 @@ const ActionCard = ({ icon, title, desc, accentColor }) => (
 
 function Dashboard() {
     const navigate = useNavigate();
+    const [userCount, setUserCount] = useState(0);
+    const [loading, setLoading] = useState(true);
+
+    // Get Admin ID from env
+    const adminId = import.meta.env.VITE_admin_uid; 
+
+    useEffect(() => {
+        const fetchUserCount = async () => {
+            try {
+                const coll = collection(db, "users");
+                
+                // Query to exclude the admin ID
+                // Note: 'uid' should match the field name in your Firestore documents
+                const q = query(coll, where("uid", "!=", adminId));
+                
+                const snapshot = await getCountFromServer(q);
+                setUserCount(snapshot.data().count);
+            } catch (error) {
+                console.error("Error fetching user count:", error);
+                // Fallback: If '!=' query fails due to missing index, 
+                // you might need to create the index in Firebase console.
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUserCount();
+    }, [adminId]);
 
     return (
-        <div className="animate-in fade-in duration-500 ">
+        <div className="animate-in fade-in duration-500">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
                 <StatCard label="Total Petrol Car" value="1,452" icon={<Fuel size={20} className="text-[#0da6f2] mb-3"/>} />
                 <StatCard label="Total Diesel Car" value="842" icon={<Fuel size={20} className="text-amber-500 mb-3" />} />
                 <StatCard label="Total EV Car" value="248" icon={<Zap size={20} className="text-emerald-400 mb-3" />} />
-                <StatCard label="Total Users" value="3,120" icon={<Users size={20} className="text-purple-400 mb-3" />} />
+                
+                {/* Updated Total Users Card */}
+                <StatCard 
+                    label="Total Users" 
+                    value={userCount.toLocaleString()} 
+                    loading={loading}
+                    icon={<Users size={20} className="text-purple-400 mb-3" />} 
+                />
             </div>
-            <h2 className="text-xl font-bold text-white mb-6">Quick Actions</h2>
+
+            <h2 className="text-xl font-bold text-white mb-6 px-1">Quick Actions</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16 mt-3">
-                <div onClick={ ()=> navigate('/admin/add-car')}>
+                <div onClick={() => navigate('/admin/add-car')}>
                     <ActionCard icon={<PlusCircle size={36} />} title="Add New Vehicle" desc="Register a new unit." accentColor="#0da6f2" />
                 </div>
-                <div onClick={ ()=> navigate('/admin/inventory')}>
+                <div onClick={() => navigate('/admin/inventory')}>
                     <ActionCard icon={<ListPlus size={36} />} title="View Inventory" desc="Explore vehicle repository." accentColor="#0da6f2" />
                 </div>
-                <div onClick={ ()=> navigate('/admin/delete-car')}>
+                <div onClick={() => navigate('/admin/delete-car')}>
                     <ActionCard icon={<Trash2 size={36} />} title="Remove Vehicle" desc="Decommission units." accentColor="#ef4444" />
                 </div>
             </div>
         </div>
-    )
+    );
 }
 
 export default Dashboard;
