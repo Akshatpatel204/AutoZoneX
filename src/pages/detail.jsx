@@ -28,10 +28,10 @@ const Detail = () => {
         fetchCarDetails();
     }, [id, API_BASE]);
 
-    // Function to handle opening the URL in a new tab
     const handleKnowMore = () => {
-        if (car?.knowmore) {
-            window.open(car.knowmore, '_blank', 'noopener,noreferrer');
+        const targetUrl = car?.knowmore || car?.knowMore;
+        if (targetUrl) {
+            window.open(targetUrl, '_blank', 'noopener,noreferrer');
         }
     };
 
@@ -42,6 +42,8 @@ const Detail = () => {
     );
 
     if (!car) return <div className="text-white text-center py-20">Car Not Found</div>;
+
+    const hasUrl = car?.knowmore || car?.knowMore;
 
     return (
         <div className="bg-background-dark text-slate-100 font-sans min-h-screen overflow-x-hidden grid-bg bg-[linear-gradient(to_right,rgba(14,165,233,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(14,165,233,0.05)_1px,transparent_1px)] bg-[size:40px_40px]">
@@ -56,7 +58,7 @@ const Detail = () => {
                         </svg>
                     </div>
                     <span className="font-display text-2xl tracking-[0.2em] font-black text-white uppercase">
-                        {car.brand} <span className="text-primary italic">{car.Name}</span>
+                        {car.brand} {car.Name}
                     </span>
                 </div>
             </nav>
@@ -77,47 +79,46 @@ const Detail = () => {
                             <div className="glass-panel p-6 border-l-4 border-primary">
                                 <p className="text-[10px] text-primary uppercase tracking-[0.3em] mb-1 font-bold">Top Speed</p>
                                 <p className="text-6xl font-display font-black text-white neon-text">
-                                    {car.Speed.replace(/[^0-9.]/g, '')} 
+                                    {car.Speed?.replace(/[^0-9.]/g, '')} 
                                     <span className="text-xl font-normal opacity-60 ml-2">KM/H</span>
                                 </p>
                             </div>
                             <div className="glass-panel p-6 border-l-4 border-primary">
                                 <p className="text-[10px] text-primary uppercase tracking-[0.3em] mb-1 font-bold">0-100 Acceleration</p>
                                 <p className="text-6xl font-display font-black text-white neon-text">
-                                    {car.mph.replace(/[^0-9.]/g, '')} 
+                                    {car.mph?.replace(/[^0-9.]/g, '')} 
                                     <span className="text-xl font-normal opacity-60 ml-2">S</span>
                                 </p>
                             </div>
                         </div>
 
+                        {/* Bottom Left Info */}
                         <div className="absolute bottom-8 left-12 max-w-xl z-10">
                             <h2 className="font-display text-5xl font-black text-white uppercase leading-none mb-4">
-                                {car.brand}  {car.Name}
+                                {car.brand} {car.Name}
                             </h2>
-                            <p className="text-slate-400 font-light leading-relaxed">
-                                {car.knowMore}
-                            </p>
                         </div>
+
+                        {/* Bottom Right Know More Button */}
+                        {hasUrl && (
+                             <div className="absolute bottom-10 right-10 z-20">
+                                <button 
+                                    onClick={handleKnowMore}
+                                    className="flex items-center gap-3 px-8 py-4 bg-primary hover:bg-white text-white hover:text-black rounded-full font-black uppercase tracking-widest text-xs transition-all duration-300 shadow-[0_10px_30px_rgba(14,165,233,0.4)]"
+                                >
+                                    Know More <ExternalLink size={16} />
+                                </button>
+                             </div>
+                        )}
                     </div>
 
-                    {/* Technical Specs Grid */}
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                         <div className="lg:col-span-8 space-y-8">
                             <div className="glass-panel overflow-hidden border border-white/5">
-                                <div className="flex border-b border-white/10 font-display text-xs justify-between items-center pr-6">
+                                <div className="flex border-b border-white/10 font-display text-xs justify-between items-center">
                                     <button className="px-10 py-5 bg-primary/10 border-t-2 border-primary text-primary font-bold uppercase">
                                         Technical Specifications
                                     </button>
-                                    
-                                    {/* Know More Button */}
-                                    {car.knowmore && (
-                                        <button 
-                                            onClick={handleKnowMore}
-                                            className="flex items-center gap-2 px-6 py-2 bg-primary hover:bg-blue-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(14,165,233,0.3)]"
-                                        >
-                                            Know More <ExternalLink size={14} />
-                                        </button>
-                                    )}
                                 </div>
                                 <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-12">
                                     <div className="space-y-6">
@@ -136,14 +137,12 @@ const Detail = () => {
                                             <SpecRow label="Fuel Type" value={car.FuelType} />
                                             <SpecRow label="Front Brakes" value={car.FrontBrakes} />
                                             <SpecRow label="Rear Brakes" value={car.RearBrakes} />
-                                            {/* <SpecRow label="Price" value={`$${parseInt(car.price).toLocaleString()}`} /> */}
                                             <SpecRow label="Price" value={car.price} />
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Dynamic Gallery */}
                             <div className="glass-panel p-8 grid grid-cols-2 gap-8">
                                 {car.images.map((img, index) => (
                                     <div key={index} className='border border-gray-800 border-dashed overflow-hidden rounded-2xl aspect-video'>
@@ -157,7 +156,7 @@ const Detail = () => {
                             </div>
                         </div>
 
-                        {/* Sidebar Analytics */}
+                        {/* Sidebar Analytics - USING SVG PROGRESS */}
                         <div className="lg:col-span-4 space-y-6">
                             <div className="glass-panel p-8 border-r-4 border-r-primary">
                                 <h3 className="font-display text-lg font-bold tracking-widest text-white uppercase mb-10 flex items-center gap-3">
@@ -187,20 +186,55 @@ const SpecRow = ({ label, value }) => (
     </div>
 );
 
-const CircularProgress = ({ score, label, sub }) => (
-    <div className="flex items-center gap-6">
-        <div className="relative w-20 h-20 rounded-full flex items-center justify-center border-4 border-white/5">
-            <div
-                className="absolute inset-0 rounded-full border-4 border-primary shadow-[0_0_10px_#0ea5e9]"
-                style={{ clipPath: `conic-gradient(from 0deg, #0ea5e9 ${score * 10}%, transparent 0)` }}
-            ></div>
-            <span className="font-display font-bold text-2xl text-white">{score}</span>
+// Real SVG Circular Progress Bar
+const CircularProgress = ({ score, label, sub }) => {
+    // Assuming score is 1-10. Convert to percentage (0-100)
+    const percentage = Math.min(Math.max(score * 10, 0), 100);
+    const radius = 36;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference - (percentage / 100) * circumference;
+
+    return (
+        <div className="flex items-center gap-6">
+            <div className="relative w-24 h-24 flex items-center justify-center">
+                {/* Background Circle */}
+                <svg className="w-full h-full transform -rotate-90">
+                    <circle
+                        cx="48"
+                        cy="48"
+                        r={radius}
+                        stroke="currentColor"
+                        strokeWidth="6"
+                        fill="transparent"
+                        className="text-white/5"
+                    />
+                    {/* Progress Circle */}
+                    <circle
+                        cx="48"
+                        cy="48"
+                        r={radius}
+                        stroke="currentColor"
+                        strokeWidth="6"
+                        fill="transparent"
+                        strokeDasharray={circumference}
+                        style={{ 
+                            strokeDashoffset: offset,
+                            transition: 'stroke-dashoffset 1s ease-in-out'
+                        }}
+                        strokeLinecap="round"
+                        className="text-primary shadow-[0_0_10px_#0ea5e9]"
+                    />
+                </svg>
+                <span className="absolute font-display font-bold text-2xl text-white">
+                    {score}
+                </span>
+            </div>
+            <div>
+                <h5 className="text-xs font-display text-primary tracking-widest uppercase mb-1">{label}</h5>
+                <p className="text-[10px] text-slate-500 font-mono">{sub}</p>
+            </div>
         </div>
-        <div>
-            <h5 className="text-xs font-display text-primary tracking-widest uppercase mb-1">{label}</h5>
-            <p className="text-[10px] text-slate-500 font-mono">{sub}</p>
-        </div>
-    </div>
-);
+    );
+};
 
 export default Detail;
