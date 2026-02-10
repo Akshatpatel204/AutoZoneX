@@ -136,7 +136,8 @@ const Detail = () => {
                                             <SpecRow label="Fuel Type" value={car.FuelType} />
                                             <SpecRow label="Front Brakes" value={car.FrontBrakes} />
                                             <SpecRow label="Rear Brakes" value={car.RearBrakes} />
-                                            <SpecRow label="Price" value={`$${parseInt(car.price).toLocaleString()}`} />
+                                            {/* <SpecRow label="Price" value={`$${parseInt(car.price).toLocaleString()}`} /> */}
+                                            <SpecRow label="Price" value={car.price} />
                                         </div>
                                     </div>
                                 </div>
