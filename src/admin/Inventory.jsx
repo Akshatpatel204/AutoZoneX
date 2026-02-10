@@ -33,21 +33,21 @@ const CarRow = ({ car, onInfoClick }) => {
 
       {/* 2nd Column: Name (Schema: Name) */}
       <div className="flex-1 md:w-[25%] flex flex-col justify-center px-4">
-        <h4 className="font-bold text-white text-sm truncate">{car.Name}</h4>
-        <div className="flex items-center gap-1.5 text-slate-500 text-[9px] font-medium uppercase tracking-tighter">
+        <h4 className="font-bold text-white text-sm truncate ml-7">{car.Name}</h4>
+        {/* <div className="flex items-center gap-1.5 text-slate-500 text-[9px] font-medium uppercase tracking-tighter">
             <Hash size={10} /> {car._id?.slice(-8)}
-        </div>
+        </div> */}
       </div>
 
       {/* 3rd Column: Brand (Schema: brand) */}
-      <div className="hidden md:flex items-center w-[20%] text-slate-400 text-xs font-semibold">
+      <div className="hidden md:flex items-center w-[22%] text-slate-400 text-xs font-semibold">
         <span className="bg-white/5 px-2.5 py-1 rounded-lg border border-white/5">
             {car.brand}
         </span>
       </div>
 
       {/* 4th Column: Fuel (Schema: FuelType) */}
-      <div className="hidden lg:flex items-center gap-2 w-[20%] text-[#0da6f2] opacity-80">
+      <div className="hidden lg:flex items-center gap-2 w-[33.5%] text-[#0da6f2] opacity-80">
         <Fuel size={16} />
         <span className="text-xs font-medium capitalize">{car.FuelType || 'N/A'}</span>
       </div>
