@@ -1,51 +1,59 @@
-import React from 'react'
+import React from 'react';
+import { ArrowUpRight } from 'lucide-react';
 
-const Car_card = () => {
+const Car_card = ({ car }) => {
+  const displayImage = car.images && car.images.length > 0 
+    ? car.images[0] 
+    : "https://via.placeholder.com/800x600?text=Premium+Vehicle";
+
   return (
-    <div className="group bg-card-dark rounded-2xl overflow-hidden border border-white/5 hover:border-primary/40 transition-all h-90">
-      <div className="h-64 relative overflow-hidden">
-        <img
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-          data-alt="Black luxury sports car in forest road"
-          src="https://lh3.googleusercontent.com/aida-public/AB6AXuAr7nvm66DuzSWevHLUv30GccIG7tuKqOwpnfpKQlykgS2YFW91lLHRtbb0nNyADco67_dkppznZQFauwDyWrt8ZnBY1YY3_OcrN7-yc7oqMZGJYAfUtIav5IyFZmuVm6L3-oHdm6s8MEE0QySvrmBNSUHkY0dWssBvusijorYX_HjUb7boLmo-VXbbna4oF-Rmd3h78sYnqEZFjxbz5AFJRwxdMXVKG9040KOnr_aGGu3E7Oirsm8lmeDopb6zvfQGYZy17g5pb2A5"
-        />
+    <div className="group relative h-[450px] w-full rounded-[2.5rem] overflow-hidden border border-white/10 bg-[#0a0a0a] transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)] cursor-pointer">
+      
+      {/* 1. Background Image Layer (This handles the zoom) */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-110"
+        style={{ backgroundImage: `url(${displayImage})` }}
+      />
+
+      {/* 2. Overlay Layers */}
+      {/* Base Gradient for readability */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90 transition-opacity duration-500 group-hover:opacity-70" />
+      
+      {/* Blue Tint on Hover (Professional Touch) */}
+      <div className="absolute inset-0 bg-[#0da6f2]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+      {/* 3. Top Content (Brand) */}
+      <div className="absolute top-8 left-8">
+        <div className="px-5 py-1.5 bg-black/30 backdrop-blur-xl border border-white/10 rounded-full">
+          <span className="text-white text-[10px] font-black uppercase tracking-[0.4em]">
+            {car.brand}
+          </span>
+        </div>
       </div>
-      <div className="p-3">
-        {/* <div className="flex items-center gap-2 mb-3"> */}
-        {/* <div className="flex text-primary">
-                <span className="material-symbols-outlined text-sm">star</span>
-                <span className="material-symbols-outlined text-sm">star</span>
-                <span className="material-symbols-outlined text-sm">star</span>
-                <span className="material-symbols-outlined text-sm">star</span>
-                <span className="material-symbols-outlined text-sm">
-                  star_half
-                </span>
-              </div> */}
-        {/* <span className="text-xs text-gray-400 font-bold uppercase tracking-widest">
-                9.4 Rating
-              </span> */}
-        {/* </div> */}
-        <h3 className="text-xl font-bold  group-hover:text-primary transition-colors p-0">
-          2024 Aston Martin Valour: The Last Pure Manual
-        </h3>
-        {/* <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">
-              A masterclass in analog driving dynamics combined with modern
-              British engineering excellence.
-            </p> */}
-        {/* <div className="mt-6 pt-6 border-t border-white/5 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-gray-800" />
-                <span className="text-xs font-bold text-gray-300">
-                  Marcus Sterling
-                </span>
-              </div>
-              <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
-                2h ago
-              </span>
-            </div> */}
+
+      {/* 4. Bottom Content Area */}
+      <div className="absolute bottom-0 left-0 right-0 p-10">
+        <div className="flex justify-between items-end">
+          <div className="flex-1">
+            {/* Minimalist Line Decor */}
+            <div className="w-12 h-[3px] bg-[#0da6f2] mb-4 transform origin-left transition-transform duration-500 group-hover:scale-x-150" />
+            
+            <h3 className="text-4xl font-black text-white uppercase italic tracking-tighter leading-none mb-2 drop-shadow-lg">
+              {car.Name}
+            </h3>
+            <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em] opacity-0 transform translate-y-2 transition-all duration-500 group-hover:opacity-100 group-hover:translate-y-0">
+              View Specifications
+            </p>
+          </div>
+
+          {/* Floating Action Circle */}
+          <div className="mb-2 p-5 bg-white text-black rounded-full shadow-[0_0_20px_rgba(255,255,255,0.3)] transform transition-all duration-500 translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 group-hover:rotate-[360deg]">
+            <ArrowUpRight size={24} strokeWidth={3} />
+          </div>
+        </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Car_card
+export default Car_card;
