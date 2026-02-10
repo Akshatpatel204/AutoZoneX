@@ -74,7 +74,7 @@ function AppLayout() {
         <Route path="/login" element={<Login />} />
        <Route path="/" element={user ? (isAdmin ? <Navigate to="/admin" /> : <Home />) : <Login />} />
         <Route path="/compare" element={user ? (isAdmin ? <Navigate to="/admin" /> : <Compare />) : <Login />} />
-        <Route path="/detail" element={user ? (isAdmin ? <Navigate to="/admin" /> : <Detail />) : <Login />} />
+        <Route path="/detail/:id" element={user ? (isAdmin ? <Navigate to="/admin" /> : <Detail />) : <Login />} />
 
         {/* Admin routes */}
         <Route path="/admin" element={user && isAdmin ? <A_home user={user} logout={logout} /> : <Login />}>
@@ -86,7 +86,7 @@ function AppLayout() {
         </Route>
 
         {/* Global routes */}
-        <Route path="*" element={user ? <Error /> : <Login />} />
+        <Route path="*" element={user ? <Error  admin={isAdmin} /> : <Login />} />
       </Routes>
     </div>
   );
