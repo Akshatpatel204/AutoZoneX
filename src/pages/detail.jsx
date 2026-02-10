@@ -85,6 +85,8 @@ const Detail = () => {
                                             <SpecRow label="Engine" value="M TwinPower Turbo 4.4L V8" />
                                             <SpecRow label="Max Torque" value="750 Nm" />
                                             <SpecRow label="Horsepower" value="627 HP" />
+                                            <SpecRow label="Transmission" value="8-Speed M Steptronic" />
+                                            <SpecRow label="Drivetrain" value="M xDrive AWD" />
                                         </div>
                                     </div>
                                     <div className="space-y-6">
