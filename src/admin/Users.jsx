@@ -101,10 +101,15 @@ const UserDetailsModal = ({ user, onClose }) => {
 const UserRow = ({ user, onInfoClick }) => {
   const [imgError, setImgError] = useState(false);
 
+  // Reusable truncate function
+  const truncate = (name, limit) => {
+    return name?.length > limit ? `${name.substring(0, limit)}...` : name;
+  };
+
   return (
     <div className="bg-[#16252d] p-4 rounded-2xl border border-white/5 flex items-center justify-between group hover:border-[#0da6f2]/30 transition-all mb-3 shadow-sm">
       <div className="flex items-center gap-4 w-full md:w-[25%]">
-        <div className="size-10 rounded-xl bg-[#101c22] border border-white/5 overflow-hidden flex items-center justify-center">
+        <div className="size-10 rounded-xl bg-[#101c22] border border-white/5 overflow-hidden flex items-center justify-center shrink-0">
           {user.photoURL && !imgError ? (
               <img 
                 src={user.photoURL} 
@@ -116,8 +121,20 @@ const UserRow = ({ user, onInfoClick }) => {
               <UserAvatarIcon size={20} className="text-white opacity-60" />
           )}
         </div>
-        <h4 className="font-bold text-white text-sm truncate">{user.name}</h4>
+        
+        {/* Responsive Name Truncation */}
+        <h4 className="font-bold text-white text-sm truncate">
+            {/* Mobile: 11 characters */}
+            <span className="md:hidden">
+              {truncate(user.name, 11)}
+            </span>
+            {/* Desktop: 14 characters */}
+            <span className="hidden md:block">
+              {truncate(user.name, 15)}
+            </span>
+        </h4>
       </div>
+
       <div className="hidden md:flex items-center gap-2 text-slate-400 text-xs w-[25%] truncate">{user.email}</div>
       <div className="hidden lg:flex items-center justify-center w-[15%] text-[#0da6f2] opacity-70">
           {user.provider === "google" ? <Chrome size={16} /> : <Mail size={16} />}
@@ -125,7 +142,7 @@ const UserRow = ({ user, onInfoClick }) => {
       <div className="hidden md:flex items-center gap-2 text-slate-400 text-xs w-[20%] uppercase font-medium tracking-tighter">
           {user.createdAt?.seconds ? new Date(user.createdAt.seconds * 1000).toLocaleDateString() : 'N/A'}
       </div>
-      <button onClick={() => onInfoClick(user)} className="p-2.5 rounded-xl bg-[#0da6f2]/5 text-[#0da6f2] hover:bg-[#0da6f2] hover:text-white transition-all shadow-lg active:scale-95">
+      <button onClick={() => onInfoClick(user)} className="p-2.5 rounded-xl bg-[#0da6f2]/5 text-[#0da6f2] hover:bg-[#0da6f2] hover:text-white transition-all shadow-lg active:scale-95 shrink-0">
         <Info size={18} />
       </button>
     </div>
@@ -137,9 +154,8 @@ const Users = () => {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedUser, setSelectedUser] = useState(null);
-  const itemsPerPage = 8;
-
-  // Get Admin ID from env
+  
+  const itemsPerPage = 5;
   const adminUid = import.meta.env.VITE_admin_uid;
 
   useEffect(() => {
@@ -149,10 +165,9 @@ const Users = () => {
         const q = query(coll, orderBy("createdAt", "desc"));
         const querySnapshot = await getDocs(q);
         
-        // Map data and filter out the admin UID
         const usersList = querySnapshot.docs
           .map(doc => ({ id: doc.id, ...doc.data() }))
-          .filter(user => user.uid !== adminUid); // EXCLUDE ADMIN
+          .filter(user => user.uid !== adminUid);
           
         setAllUsers(usersList);
       } catch (err) { 
@@ -165,21 +180,25 @@ const Users = () => {
   }, [adminUid]);
 
   const totalPages = Math.ceil(allUsers.length / itemsPerPage);
-  const currentUsers = allUsers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const indexOfLastUser = currentPage * itemsPerPage;
+  const indexOfFirstUser = indexOfLastUser - itemsPerPage;
+  const currentUsers = allUsers.slice(indexOfFirstUser, indexOfLastUser);
 
   if (loading) return <div className="h-screen flex items-center justify-center text-[#0da6f2]"><Loader2 className="animate-spin" size={40} /></div>;
 
   return (
-    <div className="h-screen flex flex-col p-4 animate-in fade-in duration-500 relative">
+    <div className="h-screen flex flex-col p-4 animate-in fade-in duration-500 relative ">
       {selectedUser && <UserDetailsModal user={selectedUser} onClose={() => setSelectedUser(null)} />}
 
-      <div className="hidden md:flex items-center justify-between px-6 mb-6 mt-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest opacity-60">
-        <span className="w-[25%]">Profile</span>
-        <span className="w-[25%]">Email Address</span>
-        <span className="hidden lg:block w-[15%] text-center">Provider</span>
-        <span className="w-[20%]">Joined Date</span>
-        <span className="w-fit">Actions</span>
-      </div>
+      {allUsers.length > 0 && (
+        <div className="hidden md:flex items-center justify-between px-6 mb-6 mt-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest opacity-60">
+            <span className="w-[25%]">Profile</span>
+            <span className="w-[25%]">Email Address</span>
+            <span className="hidden lg:block w-[15%] text-center">Provider</span>
+            <span className="w-[20%]">Joined Date</span>
+            <span className="w-fit">Actions</span>
+        </div>
+      )}
 
       <div className="flex-1 overflow-y-auto no-scrollbar">
         {currentUsers.length > 0 ? (
@@ -187,11 +206,17 @@ const Users = () => {
             <UserRow key={user.id} user={user} onInfoClick={setSelectedUser} />
           ))
         ) : (
-          <div className="text-center text-slate-500 mt-20">No users found.</div>
+          <div className="flex flex-col items-center justify-center h-full text-slate-500 gap-4">
+             <div className="p-6 bg-white/5 rounded-full border border-white/5">
+                <UserAvatarIcon size={40} className="opacity-20" />
+             </div>
+             <p className="text-sm font-medium tracking-wide">No users found in the system.</p>
+          </div>
         )}
       </div>
 
-      {totalPages > 1 && (
+      {/* Pagination Logic */}
+      {allUsers.length > itemsPerPage && (
         <div className="py-6 flex items-center justify-center gap-3">
           <button 
             disabled={currentPage === 1} 
@@ -200,7 +225,12 @@ const Users = () => {
           >
             <ChevronLeft size={20} />
           </button>
-          <span className="text-xs font-bold text-slate-500 tracking-widest uppercase">Page {currentPage} of {totalPages}</span>
+          
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-[#0da6f2] tracking-widest uppercase">Page {currentPage}</span>
+            <span className="text-xs font-bold text-slate-500/50 tracking-widest uppercase">of {totalPages}</span>
+          </div>
+
           <button 
             disabled={currentPage === totalPages} 
             onClick={() => setCurrentPage(prev => prev + 1)}
@@ -213,6 +243,5 @@ const Users = () => {
     </div>
   );
 };
-
 
 export default Users;
