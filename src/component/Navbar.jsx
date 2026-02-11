@@ -4,6 +4,8 @@ import { useState } from "react";
 const Navbar = ({ user, logout }) => {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+    // Track if the remote profile image fails to load
+    const [imgError, setImgError] = useState(false);
 
     const toggleProfile = () => {
         setIsProfileOpen(!isProfileOpen);
@@ -15,10 +17,19 @@ const Navbar = ({ user, logout }) => {
         if (isProfileOpen) setIsProfileOpen(false);
     };
 
-    // Helper for Route Links: Vertical center, no underline
     const navLinkClass = ({ isActive }) =>
         `flex items-center justify-center h-full no-underline transition-colors text-sm md:text-[15px] ${isActive ? "text-primary font-bold no-underline" : "text-white hover:text-gray-400 no-underline"
         } `;
+
+    // Logic for the small Navbar button (30px fallback)
+    const navBarIcon = (user?.photoURL && !imgError) 
+        ? user.photoURL 
+        : "/image/profile_icon_30.png";
+
+    // Logic for the larger Popup header (60px fallback)
+    const popupIcon = (user?.photoURL && !imgError) 
+        ? user.photoURL 
+        : "/image/profile_icon_60.png";
 
     return (
         <nav className="bg-[#242424] px-6 md:px-[10%] h-14 flex items-center justify-between relative text-white shadow-md z-[9999]">
@@ -43,7 +54,7 @@ const Navbar = ({ user, logout }) => {
                 </span>
             </div>
 
-            {/* 3. ROUTES: Medium Height Mobile Menu */}
+            {/* 3. ROUTES: Menu */}
             <ul className={`
                 ${isMobileNavOpen ? "flex" : "hidden"} 
                 md:flex md:flex-1 md:justify-end items-center list-none h-auto md:h-full
@@ -64,23 +75,29 @@ const Navbar = ({ user, logout }) => {
                 </li>
             </ul>
 
-            {/* 4. RIGHT: Profile Icon */}
+            {/* 4. RIGHT: Profile Icon (uses 30px fallback) */}
             <div className="flex flex-1 md:flex-none justify-end items-center h-full">
                 <img
-                    src={user?.photoURL || "/image/profile_icon_30.png"}
+                    src={navBarIcon}
                     alt="Profile"
                     className="w-8 h-8 rounded-full cursor-pointer hover:ring-2 ring-primary transition-all object-cover block"
                     onClick={toggleProfile}
+                    onError={() => setImgError(true)}
                 />
             </div>
 
-            {/* PROFILE DROPDOWN: Name, Email, Phone, Logout */}
+            {/* PROFILE DROPDOWN */}
             <div className={`absolute top-full right-4 md:right-[10%] w-72 md:w-80 z-[10000] overflow-hidden transition-all duration-400 ease-in-out ${isProfileOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0 pointer-events-none"}`}>
                 <div className="bg-white text-[#525252] mt-1 p-4 rounded-lg shadow-2xl">
 
-                    {/* User Header: Profile Image & Name */}
                     <div className="flex items-center mb-1">
-                        <img src={user?.photoURL || "/image/profile_icon_60.png"} className="w-11 h-11 rounded-full mr-4 object-cover " alt="User" />
+                        {/* Uses 60px fallback */}
+                        <img 
+                            src={popupIcon} 
+                            className="w-11 h-11 rounded-full mr-4 object-cover" 
+                            alt="User Profile" 
+                            onError={() => setImgError(true)}
+                        />
                         <div className="overflow-hidden">
                             <h3 className="font-bold text-base leading-tight truncate m-0">
                                 {user?.displayName || "Hello Guest"}
@@ -91,21 +108,16 @@ const Navbar = ({ user, logout }) => {
 
                     <hr className="border-0 h-[1px] bg-gray-100 my-3" />
 
-                    {/* Email Info */}
                     <div className="flex items-center mb-3 p-1">
                         <img src="/image/mail icon.png" className="w-7 bg-gray-50 p-1.5 rounded-full mr-3 " alt="Email" />
                         <p className="text-sm text-gray-600 m-0 truncate no-underline">{user?.email || "No email provided"}</p>
                     </div>
 
-                    {/* Phone Info */}
                     <div className="flex items-center mb-3 p-1">
                         <img src="/image/call icon.png" className="w-7 bg-gray-50 p-1.5 rounded-full mr-3" alt="Phone" />
                         <p className="text-sm text-gray-600 m-0 no-underline">+91 123456789</p>
                     </div>
 
-                    {/* <hr className="border-0 h-[1px] bg-gray-100 my-3" /> */}
-
-                    {/* Logout Button */}
                     <button
                         onClick={logout}
                         className="group flex items-center w-full hover:bg-red-50 p-1 rounded-md transition-all text-left cursor-pointer border-none bg-transparent"
