@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-// 1. Car Details Modal (Technical Data & Slider)
+// 1. Car Details Modal
 const CarDetailsModal = memo(({ car, onClose }) => {
   if (!car) return null;
 
@@ -39,15 +39,12 @@ const CarDetailsModal = memo(({ car, onClose }) => {
               <div className="w-full h-full flex items-center justify-center opacity-20"><Car size={60} /></div>
             )}
           </div>
-          {/* <div className="absolute bottom-4 right-6 bg-black/40 backdrop-blur-md px-3 py-1 rounded-full text-[10px] text-white font-bold tracking-widest border border-white/10">
-            {allImages.length} VIEWS • SWIPE
-          </div> */}
         </div>
 
-        <div className="p-8 overflow-y-auto no-scrollbar bg-gradient-to-b from-[#16252d] to-[#101c22]">
+        <div className="p-6 md:p-8 overflow-y-auto no-scrollbar bg-gradient-to-b from-[#16252d] to-[#101c22]">
           <div className="mb-6">
             <span className="text-[10px] font-black text-[#0da6f2] uppercase tracking-[0.3em] mb-1 block">{car.brand}</span>
-            <h2 className="text-3xl font-bold text-white tracking-tight">{car.Name}</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight">{car.Name}</h2>
           </div>
 
           <div className="flex gap-2 mb-8 overflow-x-auto no-scrollbar pb-2">
@@ -72,10 +69,10 @@ const CarDetailsModal = memo(({ car, onClose }) => {
           <div className="pt-6 border-t border-white/5 flex items-center justify-between">
             <div>
                <span className="text-[9px] uppercase text-slate-500 font-bold tracking-widest">Price Point</span>
-               <div className="text-2xl font-black text-[#0da6f2]">₹{car.price}</div>
+               <div className="text-xl md:text-2xl font-black text-[#0da6f2]">₹{car.price}</div>
             </div>
             {car.knowMore && (
-                <a href={car.knowMore} target="_blank" rel="noreferrer" className="px-5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-bold hover:bg-white/10 transition-all">
+                <a href={car.knowMore} target="_blank" rel="noreferrer" className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-[10px] md:text-xs font-bold hover:bg-white/10 transition-all">
                     External Info
                 </a>
             )}
@@ -88,7 +85,7 @@ const CarDetailsModal = memo(({ car, onClose }) => {
 
 const MarkBadge = ({ label, val, color }) => (
   <div className="bg-white/5 border border-white/5 px-4 py-2 rounded-2xl shrink-0">
-    <div className={`text-lg font-black ${color}`}>{val}/10</div>
+    <div className={`text-base md:text-lg font-black ${color}`}>{val}/10</div>
     <div className="text-[8px] uppercase font-bold text-slate-500 tracking-tighter">{label}</div>
   </div>
 );
@@ -99,19 +96,20 @@ const SpecBox = ({ icon, label, value }) => (
       {icon}
       <span className="text-[8px] uppercase font-bold tracking-widest truncate">{label}</span>
     </div>
-    <span className="text-[11px] text-slate-200 font-semibold truncate block">{value || "—"}</span>
+    <span className="text-[10px] md:text-[11px] text-slate-200 font-semibold truncate block">{value || "—"}</span>
   </div>
 );
 
-// 2. Memoized CarRow (Precision Alignment)
+// 2. Memoized CarRow - Brand hidden on mobile
 const CarRow = memo(({ car, onInfoClick }) => {
   const [imgError, setImgError] = useState(false);
   const displayImage = car.mainImg || (car.images && car.images[0]);
 
   return (
-    <div className="bg-[#16252d] p-4 rounded-2xl border border-white/5 flex items-center transition-all mb-3 group hover:border-[#0da6f2]/30">
+    <div className="bg-[#16252d] p-3 md:p-4 rounded-2xl border border-white/5 flex items-center transition-all mb-3 group hover:border-[#0da6f2]/30">
+      
       {/* Col 1: View (Image) */}
-      <div className="w-[15%] flex justify-start">
+      <div className="w-[20%] md:w-[15%] flex justify-start">
         <div className="size-11 md:size-14 rounded-xl bg-[#101c22] border border-white/5 overflow-hidden flex items-center justify-center shadow-inner">
           {displayImage && !imgError ? (
             <img 
@@ -122,31 +120,31 @@ const CarRow = memo(({ car, onInfoClick }) => {
               loading="lazy" 
             />
           ) : (
-            <Car size={20} className="text-white opacity-40" />
+            <Car size={18} className="text-white opacity-40" />
           )}
         </div>
       </div>
 
-      {/* Col 2: Model Details */}
-      <div className="w-[35%] px-2">
-        <h4 className="font-bold text-white text-[13px] md:text-xl truncate">{car.Name}</h4>
+      {/* Col 2: Model Name - Takes remaining space on mobile */}
+      <div className="flex-1 md:w-[35%] px-3">
+        <h4 className="font-bold text-white text-sm md:text-xl truncate leading-tight">{car.Name}</h4>
       </div>
 
-      {/* Col 3: Brand */}
-      <div className="w-[20%] flex justify-center">
+      {/* Col 3: Brand - Desktop Only */}
+      <div className="hidden md:flex w-[20%] justify-center">
         <span className="bg-white/5 px-4 py-1.5 rounded-lg border border-white/5 text-slate-400 text-[11px] font-bold tracking-wide uppercase">
           {car.brand}
         </span>
       </div>
 
-      {/* Col 4: Fuel Profile */}
-      <div className="w-[20%] flex items-center justify-center gap-2 text-[#0da6f2]/80">
+      {/* Col 4: Fuel Profile - Desktop Only */}
+      <div className="hidden md:flex w-[20%] items-center justify-center gap-2 text-[#0da6f2]/80">
         <Fuel size={14} />
         <span className="text-xs font-semibold capitalize">{car.FuelType || 'N/A'}</span>
       </div>
 
       {/* Col 5: Actions */}
-      <div className="w-[10%] flex justify-end">
+      <div className="w-[15%] md:w-[10%] flex justify-end">
         <button 
           onClick={() => onInfoClick(car)} 
           className="p-2.5 rounded-xl bg-[#0da6f2]/5 text-[#0da6f2] hover:bg-[#0da6f2] hover:text-white transition-all active:scale-95 shadow-lg shadow-black/20"
@@ -199,74 +197,60 @@ const Inventory = () => {
   if (loading) return <div className="h-[70vh] flex items-center justify-center text-[#0da6f2]"><Loader2 className="animate-spin" size={40} /></div>;
 
   return (
-    <div className="flex flex-col animate-in fade-in duration-500 relative min-h-screen">
+    <div className="flex flex-col animate-in fade-in duration-500 relative min-h-screen px-2 md:px-0">
       <CarDetailsModal car={selectedCar} onClose={closeModal} />
 
-      {/* Header Search & Add */}
-      <div className="flex items-center justify-between gap-4 mb-10">
+      <div className="flex items-center justify-between gap-3 md:gap-4 mb-6 md:mb-10 mt-2">
         <div className="relative flex-1 md:max-w-md">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
           <input 
             type="text" 
-            placeholder="Search inventory..." 
-            className="w-full bg-[#16252d] border border-white/5 rounded-2xl py-3.5 pl-12 pr-4 text-white text-sm focus:outline-none focus:border-[#0da6f2]/40 transition-all placeholder:text-slate-600 shadow-inner" 
+            placeholder="Search..." 
+            className="w-full bg-[#16252d] border border-white/5 rounded-2xl py-3.5 pl-12 pr-4 text-white text-sm focus:outline-none focus:border-[#0da6f2]/40 transition-all shadow-inner" 
             value={searchQuery} 
             onChange={(e) => setSearchQuery(e.target.value)} 
           />
         </div>
-        <button onClick={() => navigate('/admin/add-car')} className="flex items-center gap-2 bg-[#0da6f2] text-white px-6 py-3.5 rounded-2xl font-bold active:scale-95 transition-all shadow-xl shadow-[#0da6f2]/20 hover:brightness-110">
-          <Plus size={18} /> 
-          <span className="hidden sm:inline">Add Vehicle</span>
+        <button onClick={() => navigate('/admin/add-car')} className="flex items-center justify-center size-[48px] md:size-auto md:px-6 md:py-3.5 bg-[#0da6f2] text-white rounded-2xl font-bold active:scale-95 transition-all shadow-xl shadow-[#0da6f2]/20">
+          <Plus size={20} /> 
+          <span className="hidden md:inline ml-2">Add Vehicle</span>
         </button>
       </div>
 
-      {/* COLUMN HEADINGS (Aligned with Row Data) */}
-      <div className="flex items-center px-4 mb-5 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] opacity-50">
-        <span className="w-[15%]">View</span>
-        <span className="w-[35%]">Model Details</span>
-        <span className="w-[20%] text-center">Brand</span>
-        <span className="w-[20%] text-center">Fuel Profile</span>
-        <span className="w-[10%] text-right">Actions</span>
+      {/* HEADINGS - Brand hidden on mobile */}
+      <div className="flex items-center px-4 mb-4 text-[9px] md:text-[10px] font-bold text-slate-500 uppercase tracking-widest opacity-50">
+        <span className="w-[20%] md:w-[15%]">View</span>
+        <span className="flex-1 md:w-[35%] px-3 md:px-0">Car Model</span>
+        <span className="hidden md:block w-[20%] text-center">Brand</span>
+        <span className="hidden md:block w-[20%] text-center">Fuel Profile</span>
+        <span className="w-[15%] md:w-[10%] text-right">Info</span>
       </div>
 
-      {/* List container */}
-      <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
+      <div className="flex-1 overflow-y-auto no-scrollbar pb-24">
         {currentCars.length > 0 ? (
           currentCars.map(car => (
             <CarRow key={car._id} car={car} onInfoClick={handleInfoClick} />
           ))
         ) : (
           <div className="py-20 text-center opacity-30 text-white">
-            <Car size={48} className="mx-auto mb-4" />
-            <p className="text-sm">No vehicles match your criteria.</p>
+            <Car size={40} className="mx-auto mb-4" />
+            <p className="text-xs">No vehicles found.</p>
           </div>
         )}
       </div>
 
-      {/* Pagination Controls */}
+      {/* Pagination */}
       {filteredCars.length > itemsPerPage && (
-        <div className="py-8 flex items-center justify-center gap-4 mt-auto">
-          <button 
-            disabled={currentPage === 1} 
-            onClick={() => setCurrentPage(p => p - 1)} 
-            className="p-2.5 rounded-xl bg-[#16252d] text-slate-400 disabled:opacity-20 transition-all border border-white/5 hover:border-[#0da6f2]/40"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          
-          <div className="flex items-center gap-2">
-             <span className="text-[10px] font-bold text-[#0da6f2] bg-[#0da6f2]/10 px-5 py-2.5 rounded-xl border border-[#0da6f2]/20 tracking-widest">
-                PAGE {currentPage} OF {totalPages}
-              </span>
+        <div className="fixed bottom-6 left-0 right-0 flex items-center justify-center pointer-events-none">
+          <div className="flex items-center gap-3 bg-[#101c22]/90 backdrop-blur-xl p-2 rounded-2xl border border-white/10 shadow-2xl pointer-events-auto">
+            <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="p-2 rounded-xl bg-[#16252d] text-slate-400 disabled:opacity-20 active:bg-[#0da6f2]/20 transition-all">
+                <ChevronLeft size={18} />
+            </button>
+            <span className="text-[10px] font-bold text-[#0da6f2] px-2 tracking-widest">{currentPage} / {totalPages}</span>
+            <button disabled={currentPage >= totalPages} onClick={() => setCurrentPage(p => p + 1)} className="p-2 rounded-xl bg-[#16252d] text-slate-400 disabled:opacity-20 active:bg-[#0da6f2]/20 transition-all">
+                <ChevronRight size={18} />
+            </button>
           </div>
-
-          <button 
-            disabled={currentPage >= totalPages} 
-            onClick={() => setCurrentPage(p => p + 1)} 
-            className="p-2.5 rounded-lg bg-[#16252d] text-slate-400 disabled:opacity-20 transition-all border border-white/5 hover:border-[#0da6f2]/40"
-          >
-            <ChevronRight size={20} />
-          </button>
         </div>
       )}
     </div>
