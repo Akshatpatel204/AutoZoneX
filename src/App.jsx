@@ -1,22 +1,33 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, useLocation, useNavigate, Navigate } from "react-router-dom";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "./firebase-config.js";
 import './App.css';
-import Navbar from "./component/Navbar";
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Compare from "./pages/Compare.jsx";
-import Error from "./pages/Error.jsx";
-import A_home from "./admin/A_home.jsx";
-import Detail from "./pages/detail.jsx";
 
-// Import Admin Sub-pages
-import Dashboard from "./admin/Dashboard";
-import Inventory from "./admin/Inventory";
-import AddCar from "./admin/AddCar";
-import UsersPage from "./admin/Users";
-import DeleteCar from "./admin/DeleteCar";
+// 1. Static Imports (Keep these for the initial load)
+import Navbar from "./component/Navbar";
+import Login from "./pages/Login";
+
+// 2. Lazy Imports (Load only when needed)
+const Home = lazy(() => import("./pages/Home"));
+const Compare = lazy(() => import("./pages/Compare.jsx"));
+const Detail = lazy(() => import("./pages/detail.jsx"));
+const Error = lazy(() => import("./pages/Error.jsx"));
+
+// Admin Lazy Imports
+const A_home = lazy(() => import("./admin/A_home.jsx"));
+const Dashboard = lazy(() => import("./admin/Dashboard"));
+const Inventory = lazy(() => import("./admin/Inventory"));
+const AddCar = lazy(() => import("./admin/AddCar"));
+const UsersPage = lazy(() => import("./admin/Users"));
+const DeleteCar = lazy(() => import("./admin/DeleteCar"));
+
+// A simple loading component for Suspense
+const PageLoader = () => (
+  <div className="h-screen w-full bg-black flex items-center justify-center">
+    <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-primary"></div>
+  </div>
+);
 
 function AppLayout() {
   const location = useLocation();
@@ -26,15 +37,10 @@ function AppLayout() {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // Define valid user paths including dynamic detail routes
-  const exactUserPaths = ["/", "/compare", "/cars", "/login"];
-  const isUserPage = exactUserPaths.includes(location.pathname) || location.pathname.startsWith("/detail/");
-  
-  // Define admin path detection
+  // Optimization: Memoize path checks to avoid recalculation on every minor trigger
   const isAdminPath = location.pathname.startsWith("/admin");
   const isLoginPage = location.pathname === "/login";
-  
-  // A page is an error page if it's not a recognized user page AND not an admin page
+  const isUserPage = ["/", "/compare", "/cars"].includes(location.pathname) || location.pathname.startsWith("/detail/");
   const isErrorPage = !isUserPage && !isAdminPath;
 
   useEffect(() => {
@@ -60,40 +66,36 @@ function AppLayout() {
     }
   };
 
-  if (loading) return null;
+  if (loading) return <PageLoader />;
 
   return (
     <div className="min-h-screen">
-
-      {/* NAVBAR VISIBILITY LOGIC:
-          1. Must have a user logged in
-          2. Must NOT be the login page
-          3. Must NOT be an error page
-          4. Must NOT be an admin path (this is what you requested)
-      */}
       {user && !isLoginPage && !isErrorPage && !isAdminPath && (
         <Navbar user={user} logout={logout} />
       )}
 
-      <Routes>
-        {/* User routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/" element={user ? (isAdmin ? <Navigate to="/admin" /> : <Home />) : <Login />} />
-        <Route path="/compare" element={user ? (isAdmin ? <Navigate to="/admin" /> : <Compare />) : <Login />} />
-        <Route path="/detail/:id" element={user ? (isAdmin ? <Navigate to="/admin" /> : <Detail />) : <Login />} />
+      {/* 3. Wrap Routes in Suspense to handle Lazy Loading */}
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          {/* User routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={user ? (isAdmin ? <Navigate to="/admin" /> : <Home />) : <Login />} />
+          <Route path="/compare" element={user ? (isAdmin ? <Navigate to="/admin" /> : <Compare />) : <Login />} />
+          <Route path="/detail/:id" element={user ? (isAdmin ? <Navigate to="/admin" /> : <Detail />) : <Login />} />
 
-        {/* Admin routes */}
-        <Route path="/admin" element={user && isAdmin ? <A_home user={user} logout={logout} /> : <Login />}>
-          <Route index element={<Dashboard />} /> 
-          <Route path="inventory" element={<Inventory />} /> 
-          <Route path="add-car" element={<AddCar />} />
-          <Route path="users" element={<UsersPage />} />
-          <Route path="delete-car" element={<DeleteCar />} />
-        </Route>
+          {/* Admin routes */}
+          <Route path="/admin" element={user && isAdmin ? <A_home user={user} logout={logout} /> : <Login />}>
+            <Route index element={<Dashboard />} /> 
+            <Route path="inventory" element={<Inventory />} /> 
+            <Route path="add-car" element={<AddCar />} />
+            <Route path="users" element={<UsersPage />} />
+            <Route path="delete-car" element={<DeleteCar />} />
+          </Route>
 
-        {/* Global routes */}
-        <Route path="*" element={user ? <Error admin={isAdmin} /> : <Login />} />
-      </Routes>
+          {/* Global routes */}
+          <Route path="*" element={user ? <Error admin={isAdmin} /> : <Login />} />
+        </Routes>
+      </Suspense>
     </div>
   );
 }

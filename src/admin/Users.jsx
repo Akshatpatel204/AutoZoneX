@@ -1,25 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "../firebase-config";
-import { Mail, Info, Calendar, Chrome, ChevronLeft, ChevronRight, Loader2, X, Hash, Copy, Check, ShieldCheck, User as UserAvatarIcon, Fingerprint, Key } from 'lucide-react';
+import { Mail, Info, Calendar, Chrome, ChevronLeft, ChevronRight, Loader2, X, Copy, Check, ShieldCheck, User as UserAvatarIcon, Fingerprint, Key } from 'lucide-react';
 
-const UserDetailsModal = ({ user, onClose }) => {
+// 1. Memoized Modal: Prevents re-renders of the list when modal is open
+const UserDetailsModal = memo(({ user, onClose }) => {
   const [copied, setCopied] = useState(false);
   const [imgError, setImgError] = useState(false);
 
-  if (!user) return null;
-
-  const handleCopy = () => {
+  const handleCopy = useCallback(() => {
+    if (!user?.uid) return;
     navigator.clipboard.writeText(user.uid);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  };
+  }, [user?.uid]);
 
-  const formattedDate = user.createdAt?.seconds 
-    ? new Date(user.createdAt.seconds * 1000).toLocaleString('en-US', {
-        day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
-      })
-    : "Date N/A";
+  const formattedDate = useMemo(() => {
+    if (!user?.createdAt?.seconds) return "Date N/A";
+    return new Date(user.createdAt.seconds * 1000).toLocaleString('en-US', {
+      day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+  }, [user?.createdAt]);
+
+  if (!user) return null;
 
   const isAdmin = user.role?.toLowerCase() === 'admin';
   const roleStyles = isAdmin 
@@ -27,9 +30,8 @@ const UserDetailsModal = ({ user, onClose }) => {
     : "border-[#0da6f2]/30 bg-[#0da6f2]/10 text-[#0da6f2]";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-in fade-in duration-200">
-      <div className="bg-[#16252d] w-full max-w-[380px] h-[520px] rounded-[2.5rem] border border-white/10 shadow-2xl relative overflow-hidden p-8 flex flex-col items-center">
-        
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-in fade-in duration-200">
+      <div className="bg-[#16252d] w-full max-w-[380px] rounded-[2.5rem] border border-white/10 shadow-2xl relative overflow-hidden p-8 flex flex-col items-center">
         <button onClick={onClose} className="absolute top-6 right-6 text-slate-500 hover:text-white transition-colors">
           <X size={22} />
         </button>
@@ -42,9 +44,10 @@ const UserDetailsModal = ({ user, onClose }) => {
           {user.photoURL && !imgError ? (
             <img 
               src={user.photoURL} 
-              alt="profile" 
+              alt="" 
               className="w-full h-full object-cover"
               onError={() => setImgError(true)}
+              loading="lazy"
             />
           ) : (
             <UserAvatarIcon size={48} className="text-white opacity-80" />
@@ -60,9 +63,7 @@ const UserDetailsModal = ({ user, onClose }) => {
             </button>
         </div>
 
-        <h2 className="text-2xl font-bold text-white text-center mb-1 tracking-tight">
-          {user.name}
-        </h2>
+        <h2 className="text-2xl font-bold text-white text-center mb-1 tracking-tight">{user.name}</h2>
         
         <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border ${roleStyles} mt-4 mb-10`}>
             <ShieldCheck size={12} />
@@ -70,20 +71,9 @@ const UserDetailsModal = ({ user, onClose }) => {
         </div>
 
         <div className="w-full space-y-5 px-2">
+            <InfoRow icon={<Mail size={16} />} label="Email Address" value={user.email} />
             <div className="flex items-center gap-4">
-                <div className="size-9 rounded-xl bg-white/5 flex items-center justify-center text-slate-400">
-                    <Mail size={16} />
-                </div>
-                <div className="flex flex-col truncate">
-                    <span className="text-[9px] uppercase text-slate-500 font-bold tracking-widest">Email Address</span>
-                    <span className="text-sm text-slate-200 truncate">{user.email}</span>
-                </div>
-            </div>
-
-            <div className="flex items-center gap-4">
-                <div className="size-9 rounded-xl bg-white/5 flex items-center justify-center text-slate-400">
-                    <Fingerprint size={16} />
-                </div>
+                <div className="size-9 rounded-xl bg-white/5 flex items-center justify-center text-slate-400"><Fingerprint size={16} /></div>
                 <div className="flex flex-col">
                     <span className="text-[9px] uppercase text-slate-500 font-bold tracking-widest">Auth Method</span>
                     <div className="flex items-center gap-1.5">
@@ -96,15 +86,27 @@ const UserDetailsModal = ({ user, onClose }) => {
       </div>
     </div>
   );
-};
+});
 
-const UserRow = ({ user, onInfoClick }) => {
+// Helper component for Modal rows
+const InfoRow = ({ icon, label, value }) => (
+  <div className="flex items-center gap-4">
+    <div className="size-9 rounded-xl bg-white/5 flex items-center justify-center text-slate-400">{icon}</div>
+    <div className="flex flex-col truncate">
+        <span className="text-[9px] uppercase text-slate-500 font-bold tracking-widest">{label}</span>
+        <span className="text-sm text-slate-200 truncate">{value}</span>
+    </div>
+  </div>
+);
+
+// 2. Memoized UserRow: Optimized for large lists
+const UserRow = memo(({ user, onInfoClick }) => {
   const [imgError, setImgError] = useState(false);
-
-  // Reusable truncate function
-  const truncate = (name, limit) => {
-    return name?.length > limit ? `${name.substring(0, limit)}...` : name;
-  };
+  
+  const truncate = (str, limit) => str?.length > limit ? `${str.substring(0, limit)}...` : str;
+  const joinDate = useMemo(() => 
+    user.createdAt?.seconds ? new Date(user.createdAt.seconds * 1000).toLocaleDateString() : 'N/A'
+  , [user.createdAt]);
 
   return (
     <div className="bg-[#16252d] p-4 rounded-2xl border border-white/5 flex items-center justify-between group hover:border-[#0da6f2]/30 transition-all mb-3 shadow-sm">
@@ -113,25 +115,18 @@ const UserRow = ({ user, onInfoClick }) => {
           {user.photoURL && !imgError ? (
               <img 
                 src={user.photoURL} 
-                alt="avatar" 
+                alt="" 
                 className="w-full h-full object-cover" 
                 onError={() => setImgError(true)}
+                loading="lazy"
               />
           ) : (
               <UserAvatarIcon size={20} className="text-white opacity-60" />
           )}
         </div>
-        
-        {/* Responsive Name Truncation */}
         <h4 className="font-bold text-white text-sm truncate">
-            {/* Mobile: 11 characters */}
-            <span className="md:hidden">
-              {truncate(user.name, 11)}
-            </span>
-            {/* Desktop: 14 characters */}
-            <span className="hidden md:block">
-              {truncate(user.name, 15)}
-            </span>
+            <span className="md:hidden">{truncate(user.name, 11)}</span>
+            <span className="hidden md:block">{truncate(user.name, 15)}</span>
         </h4>
       </div>
 
@@ -140,14 +135,17 @@ const UserRow = ({ user, onInfoClick }) => {
           {user.provider === "google" ? <Chrome size={16} /> : <Mail size={16} />}
       </div>
       <div className="hidden md:flex items-center gap-2 text-slate-400 text-xs w-[20%] uppercase font-medium tracking-tighter">
-          {user.createdAt?.seconds ? new Date(user.createdAt.seconds * 1000).toLocaleDateString() : 'N/A'}
+          {joinDate}
       </div>
-      <button onClick={() => onInfoClick(user)} className="p-2.5 rounded-xl bg-[#0da6f2]/5 text-[#0da6f2] hover:bg-[#0da6f2] hover:text-white transition-all shadow-lg active:scale-95 shrink-0">
+      <button 
+        onClick={() => onInfoClick(user)} 
+        className="p-2.5 rounded-xl bg-[#0da6f2]/5 text-[#0da6f2] hover:bg-[#0da6f2] hover:text-white transition-all shadow-lg active:scale-95 shrink-0"
+      >
         <Info size={18} />
       </button>
     </div>
   );
-};
+});
 
 const Users = () => {
   const [allUsers, setAllUsers] = useState([]);
@@ -159,6 +157,7 @@ const Users = () => {
   const adminUid = import.meta.env.VITE_admin_uid;
 
   useEffect(() => {
+    let isMounted = true;
     const fetchData = async () => {
       try {
         const coll = collection(db, "users");
@@ -169,26 +168,39 @@ const Users = () => {
           .map(doc => ({ id: doc.id, ...doc.data() }))
           .filter(user => user.uid !== adminUid);
           
-        setAllUsers(usersList);
+        if (isMounted) setAllUsers(usersList);
       } catch (err) { 
         console.error(err); 
       } finally { 
-        setLoading(false); 
+        if (isMounted) setLoading(false); 
       }
     };
     fetchData();
+    return () => { isMounted = false; };
   }, [adminUid]);
 
-  const totalPages = Math.ceil(allUsers.length / itemsPerPage);
-  const indexOfLastUser = currentPage * itemsPerPage;
-  const indexOfFirstUser = indexOfLastUser - itemsPerPage;
-  const currentUsers = allUsers.slice(indexOfFirstUser, indexOfLastUser);
+  // 3. Memoized Pagination Calculations
+  const { currentUsers, totalPages } = useMemo(() => {
+    const total = Math.ceil(allUsers.length / itemsPerPage);
+    const start = (currentPage - 1) * itemsPerPage;
+    return {
+      currentUsers: allUsers.slice(start, start + itemsPerPage),
+      totalPages: total
+    };
+  }, [allUsers, currentPage]);
 
-  if (loading) return <div className="h-screen flex items-center justify-center text-[#0da6f2]"><Loader2 className="animate-spin" size={40} /></div>;
+  const handleInfoClick = useCallback((user) => setSelectedUser(user), []);
+  const closeModal = useCallback(() => setSelectedUser(null), []);
+
+  if (loading) return (
+    <div className="h-[60vh] flex items-center justify-center text-[#0da6f2]">
+        <Loader2 className="animate-spin" size={40} />
+    </div>
+  );
 
   return (
-    <div className="h-screen flex flex-col p-4 animate-in fade-in duration-500 relative ">
-      {selectedUser && <UserDetailsModal user={selectedUser} onClose={() => setSelectedUser(null)} />}
+    <div className="flex flex-col animate-in fade-in duration-500 relative min-h-[500px]">
+      <UserDetailsModal user={selectedUser} onClose={closeModal} />
 
       {allUsers.length > 0 && (
         <div className="hidden md:flex items-center justify-between px-6 mb-6 mt-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest opacity-60">
@@ -200,13 +212,13 @@ const Users = () => {
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto no-scrollbar">
+      <div className="flex-1">
         {currentUsers.length > 0 ? (
           currentUsers.map((user) => (
-            <UserRow key={user.id} user={user} onInfoClick={setSelectedUser} />
+            <UserRow key={user.id} user={user} onInfoClick={handleInfoClick} />
           ))
         ) : (
-          <div className="flex flex-col items-center justify-center h-full text-slate-500 gap-4">
+          <div className="flex flex-col items-center justify-center py-20 text-slate-500 gap-4">
              <div className="p-6 bg-white/5 rounded-full border border-white/5">
                 <UserAvatarIcon size={40} className="opacity-20" />
              </div>
@@ -215,9 +227,8 @@ const Users = () => {
         )}
       </div>
 
-      {/* Pagination Logic */}
       {allUsers.length > itemsPerPage && (
-        <div className="py-6 flex items-center justify-center gap-3">
+        <div className="py-8 flex items-center justify-center gap-3">
           <button 
             disabled={currentPage === 1} 
             onClick={() => setCurrentPage(prev => prev - 1)}

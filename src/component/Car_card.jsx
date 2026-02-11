@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArrowUpRight } from 'lucide-react';
 
-const Car_card = ({ car }) => {
+const Car_card = React.memo(({ car }) => {
   const displayImage = car.images && car.images.length > 0 
     ? car.images[0] 
     : "https://via.placeholder.com/800x600?text=Premium+Vehicle";
@@ -54,6 +54,6 @@ const Car_card = ({ car }) => {
       </div>
     </div>
   );
-};
+});
 
 export default Car_card;

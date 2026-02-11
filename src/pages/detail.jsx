@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import '../styles/detail.css';
@@ -7,33 +7,40 @@ import { ExternalLink } from 'lucide-react';
 import Footer from '../component/Footer';
 
 const Detail = () => {
-    const { id } = useParams(); 
+    const { id } = useParams();
     const [car, setCar] = useState(null);
     const [loading, setLoading] = useState(true);
     const API_BASE = import.meta.env.VITE_backendapi;
 
+    // 1. Optimized Data Fetching with Cleanup
     useEffect(() => {
+        let isMounted = true;
         const fetchCarDetails = async () => {
             try {
                 const response = await axios.get(`${API_BASE}/fetch_all_car`);
                 const allCars = response.data["data :- "];
                 const specificCar = allCars.find(c => c._id === id);
-                setCar(specificCar);
+                if (isMounted) setCar(specificCar);
             } catch (error) {
                 console.error("Error fetching car details:", error);
             } finally {
-                setLoading(false);
+                if (isMounted) setLoading(false);
             }
         };
         fetchCarDetails();
+        return () => { isMounted = false; };
     }, [id, API_BASE]);
 
-    const handleKnowMore = () => {
+    // 2. Memoized Callback for external links
+    const handleKnowMore = useCallback(() => {
         const targetUrl = car?.knowmore || car?.knowMore;
         if (targetUrl) {
             window.open(targetUrl, '_blank', 'noopener,noreferrer');
         }
-    };
+    }, [car?.knowmore, car?.knowMore]);
+
+    // 3. Optimized variable calculation
+    const hasUrl = useMemo(() => !!(car?.knowmore || car?.knowMore), [car?.knowmore, car?.knowMore]);
 
     if (loading) return (
         <div className="h-screen bg-background-dark flex items-center justify-center">
@@ -42,8 +49,6 @@ const Detail = () => {
     );
 
     if (!car) return <div className="text-white text-center py-20">Car Not Found</div>;
-
-    const hasUrl = car?.knowmore || car?.knowMore;
 
     return (
         <div className="bg-background-dark text-slate-100 font-sans min-h-screen overflow-x-hidden grid-bg bg-[linear-gradient(to_right,rgba(14,165,233,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(14,165,233,0.05)_1px,transparent_1px)] bg-[size:40px_40px]">
@@ -54,7 +59,7 @@ const Detail = () => {
                         <svg className="w-full h-full text-black" viewBox="0 0 100 100">
                             <circle cx="50" cy="50" fill="none" r="48" stroke="currentColor" strokeWidth="2"></circle>
                             <path d="M50 2 L50 98 M2 50 L98 50" stroke="currentColor" strokeWidth="2"></path>
-                            <text fontSize="12" fontWeight="bold" textAnchor="middle" x="50" y="35">{car.brand[0]}</text>
+                            <text fontSize="12" fontWeight="bold" textAnchor="middle" x="50" y="35">{car.brand?.[0]}</text>
                         </svg>
                     </div>
                     <span className="font-display text-2xl tracking-[0.2em] font-black text-white uppercase">
@@ -70,7 +75,8 @@ const Detail = () => {
                         <img
                             alt={car.Name}
                             className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
-                            src={car.images[0]}
+                            src={car.images?.[0]}
+                            loading="eager" // Load LCP image immediately
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-transparent to-transparent"></div>
 
@@ -92,14 +98,12 @@ const Detail = () => {
                             </div>
                         </div>
 
-                        {/* Bottom Left Info */}
                         <div className="absolute bottom-8 left-12 max-w-xl z-10">
                             <h2 className="font-display text-5xl font-black text-white uppercase leading-none mb-4">
                                 {car.brand} {car.Name}
                             </h2>
                         </div>
 
-                        {/* Bottom Right Know More Button */}
                         {hasUrl && (
                              <div className="absolute bottom-10 right-10 z-20">
                                 <button 
@@ -144,19 +148,20 @@ const Detail = () => {
                             </div>
 
                             <div className="glass-panel p-8 grid grid-cols-2 gap-8">
-                                {car.images.map((img, index) => (
+                                {car.images?.map((img, index) => (
                                     <div key={index} className='border border-gray-800 border-dashed overflow-hidden rounded-2xl aspect-video'>
                                         <img
                                             alt={`${car.Name} detail ${index}`}
                                             className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
                                             src={img}
+                                            loading="lazy" // Optimized for secondary images
                                         />
                                     </div>
                                 ))}
                             </div>
                         </div>
 
-                        {/* Sidebar Analytics - USING SVG PROGRESS */}
+                        {/* Sidebar Analytics */}
                         <div className="lg:col-span-4 space-y-6">
                             <div className="glass-panel p-8 border-r-4 border-r-primary">
                                 <h3 className="font-display text-lg font-bold tracking-widest text-white uppercase mb-10 flex items-center gap-3">
@@ -179,55 +184,35 @@ const Detail = () => {
     );
 };
 
-const SpecRow = ({ label, value }) => (
+// 4. Component level memoization to prevent SpecRow re-renders
+const SpecRow = React.memo(({ label, value }) => (
     <div className="flex justify-between items-center border-b border-white/5 pb-3">
         <span className="text-slate-400 text-sm">{label}</span>
         <span className="text-white text-sm font-mono font-bold text-right">{value}</span>
     </div>
-);
+));
 
-// Real SVG Circular Progress Bar
-const CircularProgress = ({ score, label, sub }) => {
-    // Assuming score is 1-10. Convert to percentage (0-100)
-    const percentage = Math.min(Math.max(score * 10, 0), 100);
+// 5. Memoized SVG Progress Logic
+const CircularProgress = React.memo(({ score, label, sub }) => {
+    const percentage = useMemo(() => Math.min(Math.max(score * 10, 0), 100), [score]);
     const radius = 36;
-    const circumference = 2 * Math.PI * radius;
-    const offset = circumference - (percentage / 100) * circumference;
+    const circumference = useMemo(() => 2 * Math.PI * radius, [radius]);
+    const offset = useMemo(() => circumference - (percentage / 100) * circumference, [percentage, circumference]);
 
     return (
         <div className="flex items-center gap-6">
             <div className="relative w-24 h-24 flex items-center justify-center">
-                {/* Background Circle */}
                 <svg className="w-full h-full transform -rotate-90">
+                    <circle cx="48" cy="48" r={radius} stroke="currentColor" strokeWidth="6" fill="transparent" className="text-white/5" />
                     <circle
-                        cx="48"
-                        cy="48"
-                        r={radius}
-                        stroke="currentColor"
-                        strokeWidth="6"
-                        fill="transparent"
-                        className="text-white/5"
-                    />
-                    {/* Progress Circle */}
-                    <circle
-                        cx="48"
-                        cy="48"
-                        r={radius}
-                        stroke="currentColor"
-                        strokeWidth="6"
-                        fill="transparent"
+                        cx="48" cy="48" r={radius} stroke="currentColor" strokeWidth="6" fill="transparent"
                         strokeDasharray={circumference}
-                        style={{ 
-                            strokeDashoffset: offset,
-                            transition: 'stroke-dashoffset 1s ease-in-out'
-                        }}
+                        style={{ strokeDashoffset: offset, transition: 'stroke-dashoffset 1s ease-in-out' }}
                         strokeLinecap="round"
-                        className="text-primary shadow-[0_0_10px_#0ea5e9]"
+                        className="text-primary"
                     />
                 </svg>
-                <span className="absolute font-display font-bold text-2xl text-white">
-                    {score}
-                </span>
+                <span className="absolute font-display font-bold text-2xl text-white">{score}</span>
             </div>
             <div>
                 <h5 className="text-xs font-display text-primary tracking-widest uppercase mb-1">{label}</h5>
@@ -235,6 +220,6 @@ const CircularProgress = ({ score, label, sub }) => {
             </div>
         </div>
     );
-};
+});
 
 export default Detail;

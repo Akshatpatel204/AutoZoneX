@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from "react-router-dom";
 import axios from 'axios';
 import Car_card from '../component/Car_card';
@@ -8,15 +8,14 @@ const Home = () => {
   const navigate = useNavigate();
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Get API Base URL from env
   const API_BASE = import.meta.env.VITE_backendapi;
 
   useEffect(() => {
     const fetchCars = async () => {
       try {
         const response = await axios.get(`${API_BASE}/fetch_all_car`);
-        // Note: Based on your backend code, the data is inside response.data["data :- "]
         setCars(response.data["data :- "] || []);
       } catch (error) {
         console.error("Error fetching cars:", error);
@@ -24,9 +23,32 @@ const Home = () => {
         setLoading(false);
       }
     };
-
     fetchCars();
   }, [API_BASE]);
+
+  /**
+   * OPTIMIZATION 1: useMemo
+   * The filtering logic only re-runs when 'cars' or 'searchQuery' changes.
+   * This prevents expensive array operations on every unrelated re-render.
+   */
+  const filteredCars = useMemo(() => {
+    const searchTerm = searchQuery.toLowerCase().trim();
+    if (!searchTerm) return cars;
+
+    return cars.filter((car) => 
+      car.brand?.toLowerCase().includes(searchTerm) ||
+      car.Name?.toLowerCase().includes(searchTerm)
+    );
+  }, [cars, searchQuery]);
+
+  /**
+   * OPTIMIZATION 2: useCallback
+   * Memoizes the navigation function to prevent child components from 
+   * thinking the prop has changed.
+   */
+  const handleCardClick = useCallback((id) => {
+    navigate(`/detail/${id}`);
+  }, [navigate]);
 
   return (
     <div className='bg-black text-white transition-colors duration-300 font-sans'>
@@ -38,6 +60,7 @@ const Home = () => {
             className="w-full h-full object-cover"
             alt="Hero Background"
             src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=2070"
+            loading="lazy" // OPTIMIZATION: Browser-level lazy loading for images
           />
         </div>
         <div className="relative z-30 text-center px-4 max-w-4xl mx-auto">
@@ -49,6 +72,8 @@ const Home = () => {
               className="bg-transparent border-none focus:ring-0 text-white w-full py-4 px-6 text-lg placeholder:text-gray-400"
               placeholder="Search Ferrari, Porsche, Lamborghini..."
               type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
             <button className="bg-[#0da6f2] hover:bg-blue-600 px-8 py-4 rounded-xl text-white font-bold transition-all">
               SEARCH
@@ -62,7 +87,7 @@ const Home = () => {
         <section className="mb-5">
           <div className="flex items-center justify-between mb-8 px-4">
             <h2 className="text-3xl font-black uppercase italic">
-              Trending <span className="text-[#0da6f2]">Reviews</span>
+              {searchQuery ? "Search Results" : "Trending"} <span className="text-[#0da6f2]">Reviews</span>
             </h2>
           </div>
 
@@ -72,16 +97,28 @@ const Home = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {cars.map((car) => (
-                <div key={car._id} onClick={() => navigate(`/detail/${car._id}`)}>
+              {filteredCars.map((car) => (
+                <div 
+                  key={car._id} 
+                  className="cursor-pointer" 
+                  onClick={() => handleCardClick(car._id)}
+                >
                   <Car_card car={car} />
                 </div>
               ))}
             </div>
           )}
 
-          {!loading && cars.length === 0 && (
-            <p className="text-center text-gray-500 py-10">No cars found in inventory.</p>
+          {!loading && filteredCars.length === 0 && (
+            <div className="text-center py-20 bg-white/5 rounded-3xl border border-dashed border-white/20">
+              <p className="text-2xl font-bold text-gray-400">No cars found matching "{searchQuery}"</p>
+              <button 
+                onClick={() => setSearchQuery("")}
+                className="mt-4 text-[#0da6f2] hover:underline"
+              >
+                Clear Search
+              </button>
+            </div>
           )}
         </section>
       </main>
