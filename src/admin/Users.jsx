@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "../firebase-config";
-import { Mail, Info, Calendar, Chrome, ChevronLeft, ChevronRight, Loader2, X, Copy, Check, ShieldCheck, User as UserAvatarIcon, Fingerprint, Key } from 'lucide-react';
+import { Mail, Info, Calendar, Chrome, ChevronLeft, ChevronRight, Loader2, X, Copy, Check, ShieldCheck, User as UserAvatarIcon, Fingerprint, Key, ZoomIn } from 'lucide-react';
 
-// 1. Memoized Modal: Prevents re-renders of the list when modal is open
+// 1. Memoized Modal: Features an Interactive Image Zoom
 const UserDetailsModal = memo(({ user, onClose }) => {
   const [copied, setCopied] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const [isZoomed, setIsZoomed] = useState(false); 
 
   const handleCopy = useCallback(() => {
     if (!user?.uid) return;
@@ -31,24 +32,60 @@ const UserDetailsModal = memo(({ user, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-in fade-in duration-200">
-      <div className="bg-[#16252d] w-full max-w-[380px] rounded-[2.5rem] border border-white/10 shadow-2xl relative overflow-hidden p-8 flex flex-col items-center">
-        <button onClick={onClose} className="absolute top-6 right-6 text-slate-500 hover:text-white transition-colors">
+      <div className="bg-[#16252d] w-full max-w-[380px] rounded-[2.5rem] border border-white/10 shadow-2xl relative overflow-hidden p-8 flex flex-col items-center min-h-[480px]">
+        
+        {/* Close Modal Button */}
+        <button onClick={onClose} className="absolute top-6 right-6 text-slate-500 hover:text-white transition-colors z-[70]">
           <X size={22} />
         </button>
+
+        {/* --- Image Zoom Overlay --- */}
+        {isZoomed && user.photoURL && !imgError && (
+          <div 
+            className="absolute inset-0 z-[80] bg-[#101c22] animate-in zoom-in duration-300 flex flex-col"
+            onClick={() => setIsZoomed(false)}
+          >
+            <div className="flex justify-between items-center p-6 border-b border-white/5">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Profile View</span>
+                <button className="text-white bg-white/5 p-2 rounded-xl"><X size={18} /></button>
+            </div>
+            <div className="flex-1 flex items-center justify-center p-4">
+                <img 
+                    src={user.photoURL} 
+                    alt={user.name} 
+                    className="w-full aspect-square object-cover rounded-[2rem] shadow-2xl border border-white/10" 
+                />
+            </div>
+            <div className="p-8 text-center bg-gradient-to-t from-black/20">
+                <p className="text-white font-bold text-lg">{user.name}</p>
+                <p className="text-slate-500 text-xs mt-1 italic">Tap anywhere to close</p>
+            </div>
+          </div>
+        )}
+        {/* --- End Zoom Overlay --- */}
 
         <div className="absolute top-6 left-6 px-3 py-1 rounded-full border border-orange-500/30 bg-orange-500/10 text-orange-400 text-[9px] font-bold uppercase tracking-wider">
           {formattedDate}
         </div>
 
-        <div className="size-28 rounded-full border-4 border-slate-800 bg-[#101c22] mt-8 mb-3 overflow-hidden shadow-2xl flex items-center justify-center">
+        {/* Profile Image with Zoom Trigger */}
+        <div 
+          onClick={() => !imgError && user.photoURL && setIsZoomed(true)}
+          className={`group relative size-28 rounded-full border-4 border-slate-800 bg-[#101c22] mt-8 mb-3 overflow-hidden shadow-2xl flex items-center justify-center ${user.photoURL && !imgError ? 'cursor-zoom-in' : ''}`}
+        >
           {user.photoURL && !imgError ? (
-            <img 
-              src={user.photoURL} 
-              alt="" 
-              className="w-full h-full object-cover"
-              onError={() => setImgError(true)}
-              loading="lazy"
-            />
+            <>
+              <img 
+                src={user.photoURL} 
+                alt="" 
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                onError={() => setImgError(true)}
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <ZoomIn size={24} className="text-white" />
+              </div>
+            </>
           ) : (
             <UserAvatarIcon size={48} className="text-white opacity-80" />
           )}
@@ -99,7 +136,7 @@ const InfoRow = ({ icon, label, value }) => (
   </div>
 );
 
-// 2. Memoized UserRow: Optimized for large lists
+// 2. Memoized UserRow
 const UserRow = memo(({ user, onInfoClick }) => {
   const [imgError, setImgError] = useState(false);
   
@@ -111,7 +148,7 @@ const UserRow = memo(({ user, onInfoClick }) => {
   return (
     <div className="bg-[#16252d] p-4 rounded-2xl border border-white/5 flex items-center justify-between group hover:border-[#0da6f2]/30 transition-all mb-3 shadow-sm">
       <div className="flex items-center gap-4 w-full md:w-[25%]">
-        <div className="size-10 rounded-xl bg-[#101c22] border border-white/5 overflow-hidden flex items-center justify-center shrink-0">
+        <div className="size-10 rounded-xl bg-[#101c22] border border-white/5 overflow-hidden flex items-center justify-center shrink-0 shadow-inner">
           {user.photoURL && !imgError ? (
               <img 
                 src={user.photoURL} 
@@ -179,13 +216,12 @@ const Users = () => {
     return () => { isMounted = false; };
   }, [adminUid]);
 
-  // 3. Memoized Pagination Calculations
   const { currentUsers, totalPages } = useMemo(() => {
     const total = Math.ceil(allUsers.length / itemsPerPage);
     const start = (currentPage - 1) * itemsPerPage;
     return {
       currentUsers: allUsers.slice(start, start + itemsPerPage),
-      totalPages: total
+      totalPages: total || 1
     };
   }, [allUsers, currentPage]);
 
@@ -238,8 +274,8 @@ const Users = () => {
           </button>
           
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-[#0da6f2] tracking-widest uppercase">Page {currentPage}</span>
-            <span className="text-xs font-bold text-slate-500/50 tracking-widest uppercase">of {totalPages}</span>
+            <span className="text-xs font-bold text-[#0da6f2] bg-[#0da6f2]/10 px-3 py-1 rounded-md">Page {currentPage}</span>
+            <span className="text-xs font-bold text-slate-500/50">of {totalPages}</span>
           </div>
 
           <button 
