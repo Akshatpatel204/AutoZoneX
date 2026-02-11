@@ -26,22 +26,21 @@ function AppLayout() {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // 1. Define your valid paths for users
-  // const validPaths = ["/", "/compare", "/cars", "/login", "/detail", "/admin", "/admin/inventory", "/admin/add-car", "/admin/users", "/admin/delete-car"];
-  const user_validPaths = ["/", "/compare", "/cars", "/login", "/detail"];
-  const admin_validPaths = ["/admin", "/admin/inventory", "/admin/add-car", "/admin/users", "/admin/delete-car"];
-
-
-
-  // 2. Determine if we are on a "Not Found" / Error page
-  const isErrorPage = !user_validPaths.includes(location.pathname);
+  // Define valid user paths including dynamic detail routes
+  const exactUserPaths = ["/", "/compare", "/cars", "/login"];
+  const isUserPage = exactUserPaths.includes(location.pathname) || location.pathname.startsWith("/detail/");
+  
+  // Define admin path detection
+  const isAdminPath = location.pathname.startsWith("/admin");
   const isLoginPage = location.pathname === "/login";
+  
+  // A page is an error page if it's not a recognized user page AND not an admin page
+  const isErrorPage = !isUserPage && !isAdminPath;
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
-        // Check if the current user's UID matches the admin UID
         setIsAdmin(currentUser.uid === import.meta.env.VITE_admin_uid);
       } else {
         setUser(null);
@@ -66,27 +65,34 @@ function AppLayout() {
   return (
     <div className="min-h-screen">
 
-      {/* 3. Updated Logic: Hide if login page OR if it's an undefined (error) route */}
-      {!isLoginPage && !isErrorPage && user && <Navbar user={user} logout={logout} />}
+      {/* NAVBAR VISIBILITY LOGIC:
+          1. Must have a user logged in
+          2. Must NOT be the login page
+          3. Must NOT be an error page
+          4. Must NOT be an admin path (this is what you requested)
+      */}
+      {user && !isLoginPage && !isErrorPage && !isAdminPath && (
+        <Navbar user={user} logout={logout} />
+      )}
 
       <Routes>
-        {/* User rpotes */}
+        {/* User routes */}
         <Route path="/login" element={<Login />} />
-       <Route path="/" element={user ? (isAdmin ? <Navigate to="/admin" /> : <Home />) : <Login />} />
+        <Route path="/" element={user ? (isAdmin ? <Navigate to="/admin" /> : <Home />) : <Login />} />
         <Route path="/compare" element={user ? (isAdmin ? <Navigate to="/admin" /> : <Compare />) : <Login />} />
         <Route path="/detail/:id" element={user ? (isAdmin ? <Navigate to="/admin" /> : <Detail />) : <Login />} />
 
         {/* Admin routes */}
         <Route path="/admin" element={user && isAdmin ? <A_home user={user} logout={logout} /> : <Login />}>
-          <Route index element={<Dashboard />} /> {/* Default: /admin */}
-          <Route path="inventory" element={<Inventory />} /> {/* /admin/inventory */}
+          <Route index element={<Dashboard />} /> 
+          <Route path="inventory" element={<Inventory />} /> 
           <Route path="add-car" element={<AddCar />} />
           <Route path="users" element={<UsersPage />} />
           <Route path="delete-car" element={<DeleteCar />} />
         </Route>
 
         {/* Global routes */}
-        <Route path="*" element={user ? <Error  admin={isAdmin} /> : <Login />} />
+        <Route path="*" element={user ? <Error admin={isAdmin} /> : <Login />} />
       </Routes>
     </div>
   );
