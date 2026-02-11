@@ -167,7 +167,7 @@ const AddCar = () => {
                 label="Fuel Type"
                 value={state.FuelType}
                 onChange={(e) => dispatch({ type: "SET", field: "FuelType", value: e.target.value })}
-                options={["Gasoline", "Electric", "Hybrid", "Petrol"]}
+                options={["Gasoline", "Electric", "Hybrid", "Petrol" , "Diesel"]}
               />
               <Input label="Max Engine Torque (lb-ft)" name="MaxEngineTorque" state={state} dispatch={dispatch} placeholder="750" />
               <Input label="Horsepower" name="Horsepower" state={state} dispatch={dispatch} placeholder="1020" />
@@ -289,5 +289,6 @@ const Slider = ({ label, name, value, dispatch }) => (
     />
   </div>
 );
+
 
 export default AddCar;
