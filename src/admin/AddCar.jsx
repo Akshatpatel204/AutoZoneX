@@ -154,7 +154,7 @@ const AddCar = () => {
                 onChange={(e) => dispatch({ type: "SET", field: "brand", value: e.target.value })}
                 options={["Aston Martin", "Audi", "Bentley", "BMW", "Ferrari", "Lamborghini", "Lexus", "Maserati", "McLaren", "Mercedes", "Pagani", "Porsche", "Tesla"]}
               />
-              <Input label="Price ($)" name="price" state={state} dispatch={dispatch} placeholder="0.00" />
+              <Input label="Price (₹)" name="price" state={state} dispatch={dispatch} placeholder="0.00" />
               <Input label="Know More URL" name="knowMore" state={state} dispatch={dispatch} placeholder="https://..." />
             </Grid>
           </Section>
@@ -212,7 +212,7 @@ const AddCar = () => {
               className="px-6 py-3 rounded-xl border border-yellow-500/30 text-yellow-500 hover:bg-yellow-500/10 transition-all flex items-center gap-2 font-bold"
             >
               <RotateCcw size={18} />
-              Reset Form
+              Reset Details
             </button>
 
             <button
@@ -292,3 +292,4 @@ const Slider = ({ label, name, value, dispatch }) => (
 
 
 export default AddCar;
+
