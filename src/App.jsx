@@ -4,11 +4,12 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "./firebase-config.js";
 import './App.css';
 
-// 1. Static Imports (Keep these for the initial load)
+// Static Imports
 import Navbar from "./component/Navbar";
 import Login from "./pages/Login";
+import AIChat from "./component/AIChat"; // Import the AI Chat Component
 
-// 2. Lazy Imports (Load only when needed)
+// Lazy Imports
 const Home = lazy(() => import("./pages/Home"));
 const Compare = lazy(() => import("./pages/Compare.jsx"));
 const Detail = lazy(() => import("./pages/detail.jsx"));
@@ -22,10 +23,9 @@ const AddCar = lazy(() => import("./admin/AddCar"));
 const UsersPage = lazy(() => import("./admin/Users"));
 const DeleteCar = lazy(() => import("./admin/DeleteCar"));
 
-// A simple loading component for Suspense
 const PageLoader = () => (
   <div className="h-screen w-full bg-black flex items-center justify-center">
-    <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-primary"></div>
+    <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-[#0da6f2]"></div>
   </div>
 );
 
@@ -37,11 +37,12 @@ function AppLayout() {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // Optimization: Memoize path checks to avoid recalculation on every minor trigger
   const isAdminPath = location.pathname.startsWith("/admin");
   const isLoginPage = location.pathname === "/login";
-  const isUserPage = ["/", "/compare", "/cars"].includes(location.pathname) || location.pathname.startsWith("/detail/");
-  const isErrorPage = !isUserPage && !isAdminPath;
+  
+  // Logic to show Navbar and AI Chat only on User pages (Home, Compare, Detail)
+  const isUserPage = ["/", "/compare"].includes(location.pathname) || location.pathname.startsWith("/detail/");
+  const isErrorPage = !isUserPage && !isAdminPath && !isLoginPage;
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -69,16 +70,20 @@ function AppLayout() {
   if (loading) return <PageLoader />;
 
   return (
-    <div className="min-h-screen">
-      {user && !isLoginPage && !isErrorPage && !isAdminPath && (
-        <Navbar user={user} logout={logout} />
+    <div className="min-h-screen bg-black text-white">
+      {/* Show Navbar and AI Chat only for logged-in non-admin users on specific pages */}
+      {user && !isAdmin && isUserPage && (
+        <>
+          <Navbar user={user} logout={logout} />
+          <AIChat />
+        </>
       )}
 
-      {/* 3. Wrap Routes in Suspense to handle Lazy Loading */}
       <Suspense fallback={<PageLoader />}>
         <Routes>
-          {/* User routes */}
           <Route path="/login" element={<Login />} />
+          
+          {/* User routes */}
           <Route path="/" element={user ? (isAdmin ? <Navigate to="/admin" /> : <Home />) : <Login />} />
           <Route path="/compare" element={user ? (isAdmin ? <Navigate to="/admin" /> : <Compare />) : <Login />} />
           <Route path="/detail/:id" element={user ? (isAdmin ? <Navigate to="/admin" /> : <Detail />) : <Login />} />
@@ -92,7 +97,7 @@ function AppLayout() {
             <Route path="delete-car" element={<DeleteCar />} />
           </Route>
 
-          {/* Global routes */}
+          {/* Global Error Route */}
           <Route path="*" element={user ? <Error admin={isAdmin} /> : <Login />} />
         </Routes>
       </Suspense>
