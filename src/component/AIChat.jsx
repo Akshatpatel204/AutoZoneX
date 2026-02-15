@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { MessageCircle, X, Send } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 const AIChat = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -52,13 +53,13 @@ const AIChat = () => {
                 </button>
             )}
 
-            {/* Chat Window - Mobile Responsive Widths */}
+            {/* Chat Window */}
             {isOpen && (
                 <div className="bg-[#121212] w-[90vw] sm:w-[350px] h-[70vh] sm:h-[500px] rounded-2xl shadow-2xl flex flex-col border border-white/10 overflow-hidden animate-in fade-in zoom-in duration-200">
                     {/* Header */}
                     <div className="bg-[#0da6f2] p-4 flex justify-between items-center text-white shrink-0">
                         <div>
-                            <h3 className="font-black italic text-base md:text-lg">AUTOZONEX AI</h3>
+                            <h3 className="font-black italic text-base md:text-lg uppercase">AUTOZONEX AI</h3>
                             <div className="flex items-center gap-1.5">
                                 <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
                                 <p className="text-[10px] uppercase tracking-tighter">Expert System Online</p>
@@ -70,22 +71,35 @@ const AIChat = () => {
                     </div>
 
                     {/* Chat Area */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth">
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth bg-[#121212]">
                         {messages.map((msg, idx) => (
                             <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                                 <div className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed ${
                                     msg.role === 'user' 
-                                    ? 'bg-[#0da6f2] text-white rounded-tr-none' 
-                                    : 'bg-white/5 text-gray-200 rounded-tl-none border border-white/5'
+                                    ? 'bg-[#0da6f2] text-white rounded-tr-none shadow-lg' 
+                                    : 'bg-white/5 text-gray-200 rounded-tl-none border border-white/10 shadow-inner'
                                 }`}>
-                                    {msg.text}
+                                    {/* Markdown rendering logic */}
+                                    <div className="prose prose-invert prose-sm max-w-none">
+                                        <ReactMarkdown 
+                                            components={{
+                                                ul: ({node, ...props}) => <ul className="list-disc ml-4 space-y-1 my-2" {...props} />,
+                                                ol: ({node, ...props}) => <ol className="list-decimal ml-4 space-y-1 my-2" {...props} />,
+                                                li: ({node, ...props}) => <li className="marker:text-[#0da6f2]" {...props} />,
+                                                p: ({node, ...props}) => <p className="m-0" {...props} />,
+                                                a: ({node, ...props}) => <a className="text-[#0da6f2] underline hover:text-white transition-colors" target="_blank" rel="noopener noreferrer" {...props} />
+                                            }}
+                                        >
+                                            {msg.text}
+                                        </ReactMarkdown>
+                                    </div>
                                 </div>
                             </div>
                         ))}
                         {loading && (
                             <div className="flex justify-start">
-                                <div className="bg-white/5 p-3 rounded-2xl rounded-tl-none animate-pulse text-[#0da6f2] text-xs">
-                                    Typing...
+                                <div className="bg-white/5 p-3 rounded-2xl rounded-tl-none animate-pulse text-[#0da6f2] text-xs font-bold">
+                                    AI is searching inventory...
                                 </div>
                             </div>
                         )}
@@ -93,15 +107,15 @@ const AIChat = () => {
                     </div>
 
                     {/* Input Area */}
-                    <form onSubmit={handleSendMessage} className="p-3 bg-black/60 border-t border-white/5 flex gap-2">
+                    <form onSubmit={handleSendMessage} className="p-3 bg-black/40 border-t border-white/5 flex gap-2">
                         <input
                             type="text"
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
-                            placeholder="Ask what you want to ask .."
+                            placeholder="Ask about car specs or prices..."
                             className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#0da6f2] placeholder:text-gray-500"
                         />
-                        <button type="submit" className="bg-[#0da6f2] text-white p-3 rounded-xl hover:bg-blue-600 transition-all active:scale-95">
+                        <button type="submit" className="bg-[#0da6f2] text-white p-3 rounded-xl hover:bg-blue-600 transition-all active:scale-95 shadow-lg">
                             <Send size={20} />
                         </button>
                     </form>
