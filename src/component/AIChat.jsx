@@ -99,7 +99,7 @@ const AIChat = () => {
                         {loading && (
                             <div className="flex justify-start">
                                 <div className="bg-white/5 p-3 rounded-2xl rounded-tl-none animate-pulse text-[#0da6f2] text-xs font-bold">
-                                    AI is searching inventory...
+                                    Typing...
                                 </div>
                             </div>
                         )}
@@ -124,5 +124,6 @@ const AIChat = () => {
         </div>
     );
 };
+
 
 export default AIChat;
