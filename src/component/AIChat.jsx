@@ -150,7 +150,7 @@ const AIChat = () => {
                             type="text"
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
-                            placeholder="Compare P1 GTR and M5 CS..."
+                            placeholder="Ask me what you want"
                             className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#0da6f2] placeholder:text-gray-500"
                         />
                         <button type="submit" className="bg-[#0da6f2] text-white p-3 rounded-xl hover:bg-blue-600 transition-all active:scale-95 shadow-lg">
@@ -165,3 +165,4 @@ const AIChat = () => {
 
 
 export default AIChat;
+
