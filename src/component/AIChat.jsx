@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { MessageCircle, X, Send } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm'; // Import the table plugin
 
-// Add this CSS in your global CSS file or a style tag
 const typingAnimationStyle = `
   @keyframes blink {
     0%, 100% { opacity: 0.3; transform: scale(1); }
@@ -19,6 +19,24 @@ const typingAnimationStyle = `
   }
   .dot:nth-child(2) { animation-delay: 0.2s; }
   .dot:nth-child(3) { animation-delay: 0.4s; }
+  
+  /* Custom Table Styling */
+  .chat-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 12px;
+    color: #e5e7eb;
+  }
+  .chat-table th, .chat-table td {
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 8px;
+    text-align: left;
+  }
+  .chat-table th {
+    background-color: rgba(13, 166, 242, 0.2);
+    color: #0da6f2;
+  }
 `;
 
 const AIChat = () => {
@@ -63,7 +81,6 @@ const AIChat = () => {
         <div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-[9999]">
             <style>{typingAnimationStyle}</style>
             
-            {/* Toggle Button */}
             {!isOpen && (
                 <button 
                     onClick={() => setIsOpen(true)}
@@ -73,9 +90,8 @@ const AIChat = () => {
                 </button>
             )}
 
-            {/* Chat Window */}
             {isOpen && (
-                <div className="bg-[#121212] w-[90vw] sm:w-[350px] h-[70vh] sm:h-[500px] rounded-2xl shadow-2xl flex flex-col border border-white/10 overflow-hidden animate-in fade-in zoom-in duration-200">
+                <div className="bg-[#121212] w-[95vw] sm:w-[400px] h-[80vh] sm:h-[550px] rounded-2xl shadow-2xl flex flex-col border border-white/10 overflow-hidden animate-in fade-in zoom-in duration-200">
                     {/* Header */}
                     <div className="bg-[#0da6f2] p-4 flex justify-between items-center text-white shrink-0">
                         <div>
@@ -94,19 +110,19 @@ const AIChat = () => {
                     <div className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth bg-[#121212]">
                         {messages.map((msg, idx) => (
                             <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                <div className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed ${
+                                <div className={`max-w-[90%] p-3 rounded-2xl text-sm leading-relaxed ${
                                     msg.role === 'user' 
-                                    ? 'bg-[#0da6f2] text-white rounded-tr-none shadow-lg' 
-                                    : 'bg-white/5 text-gray-200 rounded-tl-none border border-white/10 shadow-inner'
+                                    ? 'bg-[#0da6f2] text-white rounded-tr-none' 
+                                    : 'bg-white/5 text-gray-200 rounded-tl-none border border-white/10'
                                 }`}>
-                                    <div className="prose prose-invert prose-sm max-w-none">
+                                    <div className="overflow-x-auto"> {/* Critical for mobile tables */}
                                         <ReactMarkdown 
+                                            remarkPlugins={[remarkGfm]} // Adds Table support
                                             components={{
+                                                table: ({node, ...props}) => <table className="chat-table" {...props} />,
                                                 ul: ({node, ...props}) => <ul className="list-disc ml-4 space-y-1 my-2" {...props} />,
-                                                ol: ({node, ...props}) => <ol className="list-decimal ml-4 space-y-1 my-2" {...props} />,
-                                                li: ({node, ...props}) => <li className="marker:text-[#0da6f2]" {...props} />,
-                                                p: ({node, ...props}) => <p className="m-0" {...props} />,
-                                                a: ({node, ...props}) => <a className="text-[#0da6f2] underline hover:text-white transition-colors" target="_blank" rel="noopener noreferrer" {...props} />
+                                                p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
+                                                a: ({node, ...props}) => <a className="text-[#0da6f2] underline" target="_blank" {...props} />
                                             }}
                                         >
                                             {msg.text}
@@ -116,7 +132,6 @@ const AIChat = () => {
                             </div>
                         ))}
 
-                        {/* WhatsApp/Instagram Style Typing Dots */}
                         {loading && (
                             <div className="flex justify-start">
                                 <div className="bg-white/5 p-4 rounded-2xl rounded-tl-none border border-white/10 flex items-center gap-1">
@@ -135,7 +150,7 @@ const AIChat = () => {
                             type="text"
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
-                            placeholder="Ask about car specs or prices..."
+                            placeholder="Compare P1 GTR and M5 CS..."
                             className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#0da6f2] placeholder:text-gray-500"
                         />
                         <button type="submit" className="bg-[#0da6f2] text-white p-3 rounded-xl hover:bg-blue-600 transition-all active:scale-95 shadow-lg">
