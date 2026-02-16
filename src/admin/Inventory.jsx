@@ -89,7 +89,7 @@ const CarDetailsModal = memo(({ car, onClose, onUpdate }) => {
       if (response.status === 200) {
         onUpdate(editedCar);
         setIsEditing(false);
-        alert("Vehicle updated successfully!");
+        // alert("Vehicle updated successfully!");
       }
     } catch (err) {
       console.error("Save Error:", err);
@@ -332,3 +332,4 @@ const CarRow = memo(({ car, onInfoClick }) => {
 });
 
 export default Inventory;
+
