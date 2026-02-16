@@ -2,10 +2,10 @@ import React, { useState, useEffect, useCallback, memo } from 'react';
 import { useNavigate } from "react-router-dom";
 import { collection, query, where, getCountFromServer } from "firebase/firestore";
 import { db } from "../firebase-config";
-import { Fuel, Zap, Users, PlusCircle, ListPlus, Trash2, Loader2 } from 'lucide-react';
+import { Fuel, Zap, Users, PlusCircle, ListPlus, Trash2, Loader2, Leaf, Droplets } from 'lucide-react';
 import axios from 'axios';
 
-// 1. Memoized StatCard: Only re-renders if value or loading state changes
+// 1. Memoized StatCard
 const StatCard = memo(({ label, value, icon, loading }) => (
     <div className="bg-[#16252d] p-6 rounded-xl border border-white/5 shadow-sm">
         <div className="flex items-center gap-2 mb-2">
@@ -20,7 +20,7 @@ const StatCard = memo(({ label, value, icon, loading }) => (
     </div>
 ));
 
-// 2. Memoized ActionCard: Static component that should never re-render
+// 2. Memoized ActionCard
 const ActionCard = memo(({ icon, title, desc, accentColor, onClick }) => (
     <div 
         onClick={onClick}
@@ -41,6 +41,8 @@ function Dashboard() {
         petrol: 0,
         diesel: 0,
         ev: 0,
+        gasoline: 0, // Matches your form data
+        hybrid: 0,
         users: 0
     });
     const [loading, setLoading] = useState(true);
@@ -49,20 +51,22 @@ function Dashboard() {
     const API_BASE = import.meta.env.VITE_backendapi;
 
     useEffect(() => {
-        let isMounted = true; // Optimization: Prevent state updates on unmounted component
+        let isMounted = true; 
         
         const fetchAllStats = async () => {
             setLoading(true);
             try {
-                // Fetch stats in parallel
                 const userColl = collection(db, "users");
                 const userQ = query(userColl, where("uid", "!=", adminId));
                 
-                const [userSnapshot, petrolRes, dieselRes, evRes] = await Promise.all([
+                // FIXED: Querying for "Gasoline" to match your AddCar.jsx options
+                const [userSnapshot, petrolRes, dieselRes, evRes, gasRes, hybridRes] = await Promise.all([
                     getCountFromServer(userQ),
                     axios.get(`${API_BASE}/api/cars/filter?fuel=Petrol`),
                     axios.get(`${API_BASE}/api/cars/filter?fuel=Diesel`),
-                    axios.get(`${API_BASE}/api/cars/filter?fuel=Electric`)
+                    axios.get(`${API_BASE}/api/cars/filter?fuel=Electric`),
+                    axios.get(`${API_BASE}/api/cars/filter?fuel=Gasoline`), // Changed Gas to Gasoline
+                    axios.get(`${API_BASE}/api/cars/filter?fuel=Hybrid`)
                 ]);
 
                 if (isMounted) {
@@ -71,6 +75,8 @@ function Dashboard() {
                         petrol: petrolRes.data["data :- "].length,
                         diesel: dieselRes.data["data :- "].length,
                         ev: evRes.data["data :- "].length,
+                        gasoline: gasRes.data["data :- "].length,
+                        hybrid: hybridRes.data["data :- "].length,
                     });
                 }
             } catch (error) {
@@ -81,15 +87,14 @@ function Dashboard() {
         };
 
         fetchAllStats();
-        return () => { isMounted = false; }; // Cleanup
+        return () => { isMounted = false; }; 
     }, [adminId, API_BASE]);
 
-    // 3. Memoized navigation handlers
     const goTo = useCallback((path) => () => navigate(path), [navigate]);
 
     return (
         <div className="animate-in fade-in duration-500">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
                 <StatCard 
                     label="Total Petrol Car" 
                     value={counts.petrol} 
@@ -100,13 +105,25 @@ function Dashboard() {
                     label="Total Diesel Car" 
                     value={counts.diesel} 
                     loading={loading}
-                    icon={<Fuel size={20} className="text-amber-500 mb-3" />} 
+                    icon={<Droplets size={20} className="text-amber-500 mb-3" />} 
                 />
                 <StatCard 
                     label="Total EV Car" 
                     value={counts.ev} 
                     loading={loading}
                     icon={<Zap size={20} className="text-emerald-400 mb-3" />} 
+                />
+                <StatCard 
+                    label="Total Gas Car" 
+                    value={counts.gasoline} 
+                    loading={loading}
+                    icon={<Fuel size={20} className="text-orange-400 mb-3" />} 
+                />
+                <StatCard 
+                    label="Total Hybrid Car" 
+                    value={counts.hybrid} 
+                    loading={loading}
+                    icon={<Leaf size={20} className="text-lime-400 mb-3" />} 
                 />
                 <StatCard 
                     label="Total Users" 
