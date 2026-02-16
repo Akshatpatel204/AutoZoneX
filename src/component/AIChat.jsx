@@ -97,7 +97,7 @@ const AIChat = () => {
                         <div>
                             <h3 className="font-black italic text-base md:text-lg uppercase">AUTOZONEX AI</h3>
                             <div className="flex items-center gap-1.5">
-                                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse mb-3"></span>
                                 <p className="text-[10px] uppercase tracking-tighter">Expert System Online</p>
                             </div>
                         </div>
@@ -162,5 +162,6 @@ const AIChat = () => {
         </div>
     );
 };
+
 
 export default AIChat;
