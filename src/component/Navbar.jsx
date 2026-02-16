@@ -1,7 +1,8 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 const Navbar = ({ user, logout }) => {
+    const navigate = useNavigate();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
     // Track if the remote profile image fails to load
@@ -22,13 +23,13 @@ const Navbar = ({ user, logout }) => {
         } `;
 
     // Logic for the small Navbar button (30px fallback)
-    const navBarIcon = (user?.photoURL && !imgError) 
-        ? user.photoURL 
+    const navBarIcon = (user?.photoURL && !imgError)
+        ? user.photoURL
         : "/image/profile_icon_30.png";
 
     // Logic for the larger Popup header (60px fallback)
-    const popupIcon = (user?.photoURL && !imgError) 
-        ? user.photoURL 
+    const popupIcon = (user?.photoURL && !imgError)
+        ? user.photoURL
         : "/image/profile_icon_60.png";
 
     return (
@@ -47,7 +48,7 @@ const Navbar = ({ user, logout }) => {
             </div>
 
             {/* 2. LOGO: Centered on Mobile */}
-            <div className="flex justify-center md:justify-start items-center gap-2 h-full">
+            <div className="flex justify-center md:justify-start items-center gap-2 h-full cursor-pointer" onClick={()=> navigate('/')}>
                 <span className="material-symbols-outlined text-primary text-xl md:text-2xl">speed</span>
                 <span style={{ fontFamily: "Orbitron" }} className="text-white font-bold text-base md:text-lg tracking-wider">
                     AUTOZONEX
@@ -92,10 +93,10 @@ const Navbar = ({ user, logout }) => {
 
                     <div className="flex items-center mb-1">
                         {/* Uses 60px fallback */}
-                        <img 
-                            src={popupIcon} 
-                            className="w-11 h-11 rounded-full mr-4 object-cover" 
-                            alt="User Profile" 
+                        <img
+                            src={popupIcon}
+                            className="w-11 h-11 rounded-full mr-4 object-cover"
+                            alt="User Profile"
                             onError={() => setImgError(true)}
                         />
                         <div className="overflow-hidden">
