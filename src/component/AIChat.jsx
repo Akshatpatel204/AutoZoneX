@@ -3,6 +3,24 @@ import axios from 'axios';
 import { MessageCircle, X, Send } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
+// Add this CSS in your global CSS file or a style tag
+const typingAnimationStyle = `
+  @keyframes blink {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
+  .dot {
+    animation: blink 1.4s infinite both;
+    width: 6px;
+    height: 6px;
+    background-color: #0da6f2;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+`;
+
 const AIChat = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [input, setInput] = useState('');
@@ -18,7 +36,7 @@ const AIChat = () => {
 
     useEffect(() => {
         if (isOpen) scrollToBottom();
-    }, [messages, isOpen]);
+    }, [messages, isOpen, loading]);
 
     const handleSendMessage = async (e) => {
         e.preventDefault();
@@ -43,6 +61,8 @@ const AIChat = () => {
 
     return (
         <div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-[9999]">
+            <style>{typingAnimationStyle}</style>
+            
             {/* Toggle Button */}
             {!isOpen && (
                 <button 
@@ -79,7 +99,6 @@ const AIChat = () => {
                                     ? 'bg-[#0da6f2] text-white rounded-tr-none shadow-lg' 
                                     : 'bg-white/5 text-gray-200 rounded-tl-none border border-white/10 shadow-inner'
                                 }`}>
-                                    {/* Markdown rendering logic */}
                                     <div className="prose prose-invert prose-sm max-w-none">
                                         <ReactMarkdown 
                                             components={{
@@ -96,10 +115,14 @@ const AIChat = () => {
                                 </div>
                             </div>
                         ))}
+
+                        {/* WhatsApp/Instagram Style Typing Dots */}
                         {loading && (
                             <div className="flex justify-start">
-                                <div className="bg-white/5 p-3 rounded-2xl rounded-tl-none animate-pulse text-[#0da6f2] text-xs font-bold">
-                                    Typing...
+                                <div className="bg-white/5 p-4 rounded-2xl rounded-tl-none border border-white/10 flex items-center gap-1">
+                                    <span className="dot"></span>
+                                    <span className="dot"></span>
+                                    <span className="dot"></span>
                                 </div>
                             </div>
                         )}
@@ -124,6 +147,5 @@ const AIChat = () => {
         </div>
     );
 };
-
 
 export default AIChat;
