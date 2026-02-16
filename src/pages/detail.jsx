@@ -50,7 +50,7 @@ const Detail = () => {
     return (
         <div className="bg-background-dark text-slate-100 font-sans min-h-screen overflow-x-hidden grid-bg bg-[linear-gradient(to_right,rgba(14,165,233,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(14,165,233,0.05)_1px,transparent_1px)] bg-[size:40px_40px]">
             {/* Navigation */}
-            <nav className="h-20 border-b border-white/10 flex items-center justify-between px-4 md:px-8 bg-background-dark/90 backdrop-blur-xl sticky top-0 z-50">
+            {/* <nav className="h-20 border-b border-white/10 flex items-center justify-between px-4 md:px-8 bg-background-dark/90 backdrop-blur-xl sticky top-0 z-50">
                 <div className="flex items-center gap-3 md:gap-6">
                     <div className="w-8 h-8 md:w-10 md:h-10 bg-white flex items-center justify-center rounded-full p-1 shrink-0">
                         <svg className="w-full h-full text-black" viewBox="0 0 100 100">
@@ -63,7 +63,7 @@ const Detail = () => {
                         {car.brand} {car.Name}
                     </span>
                 </div>
-            </nav>
+            </nav> */}
 
             <main className="max-w-[1600px] mx-auto p-4 md:p-6 space-y-8">
                 <div className="space-y-6">
@@ -230,5 +230,6 @@ const CircularProgress = React.memo(({ score, label, sub }) => {
         </div>
     );
 });
+
 
 export default Detail;
