@@ -1,4 +1,4 @@
-import React, { useReducer, useState } from "react";
+import React, { useReducer, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
@@ -57,6 +57,35 @@ const AddCar = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [loading, setLoading] = useState(false);
   const [modal, setModal] = useState(null);
+
+  /* ---------------- FORMATTING HELPERS ---------------- */
+  const formatBrandName = (str) => {
+    if (!str) return "";
+    // Correct spelling and capitalization for multi-word brands
+    let fixedStr = str.toLowerCase() === "rolls-royce" || str.toLowerCase() === "rolls royals" 
+      ? "rolls royce" 
+      : str;
+    
+    return fixedStr
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+
+  // Memoized sorted and formatted brand list
+  const brandOptions = useMemo(() => {
+    const rawBrands = [
+      "alpha romio", "Aston Martin", "Audi", "Bentley", "BMW", "bugatti", 
+      "cadillac", "Dodge", "Ferrari", "ford", "GMC", "jaguar", "Lamborghini", 
+      "Lexus", "lotus", "Maserati", "McLaren", "Mercedes", "mitsubishi", 
+      "Pagani", "Porsche", "rang rover", "rimac", "rolls-royce", "Tesla", 
+      "toyota", "volkswagen"
+    ];
+
+    return rawBrands
+      .map(b => formatBrandName(b))
+      .sort((a, b) => a.localeCompare(b));
+  }, []);
 
   /* ---------------- VALIDATION ---------------- */
   const isValid = () => {
@@ -152,9 +181,7 @@ const AddCar = () => {
                 label="Brand"
                 value={state.brand}
                 onChange={(e) => dispatch({ type: "SET", field: "brand", value: e.target.value })}
-                options={[
-                  "alpha romio", "Aston Martin", "Audi", "Bentley", "BMW", "bugatti", "cadillac", "Dodge", "Ferrari", "ford", "GMC", "jaguar", "Lamborghini", "Lexus", "lotus", "Maserati", "McLaren", "Mercedes", "mitsubishi", "Pagani", "Porsche", "rang rover", "rimac", "rolls-royce", "Tesla", "toyota", "volkswagen"
-                ]}
+                options={brandOptions}
               />
               <Input label="Price ($)" name="price" state={state} dispatch={dispatch} placeholder="0.00" />
               <Input label="Know More URL" name="knowMore" state={state} dispatch={dispatch} placeholder="https://..." />
@@ -268,7 +295,7 @@ const Select = ({ label, value, onChange, options }) => (
     >
       <option value="" className="bg-[#101c22] text-white">Select Option</option>
       {options.map((o) => (
-        <option key={o} value={o} className="bg-[#101c22] text-white capitalize">
+        <option key={o} value={o} className="bg-[#101c22] text-white">
           {o}
         </option>
       ))}
@@ -292,4 +319,3 @@ const Slider = ({ label, name, value, dispatch }) => (
 );
 
 export default AddCar;
-
