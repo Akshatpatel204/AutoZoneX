@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from "react-router-dom";
 import axios from 'axios';
+import { Filter, X } from 'lucide-react';
 import Car_card from '../component/Car_card';
 import Footer from '../component/Footer';
 
@@ -9,8 +10,44 @@ const Home = () => {
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedBrand, setSelectedBrand] = useState("All Brands");
 
   const API_BASE = import.meta.env.VITE_backendapi;
+
+  /**
+   * HELPER: Capitalizes every word in a string and fixes specific spellings
+   */
+  const formatBrandName = (str) => {
+    if (!str) return "";
+    // Correct specific spelling first
+    let fixedStr = str.toLowerCase() === "rolls royals" ? "rolls royce" : str;
+    
+    return fixedStr
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+
+  /**
+   * Alphabetically sorted and formatted brand list
+   */
+  const brands = useMemo(() => {
+    const rawBrands = [
+      "Alpha Romio", "Aston Martin", "Audi", "Bentley", "BMW", 
+      "Bugatti", "Cadillac", "Dodge", "Ferrari", "Ford", "GMC", "Jaguar", 
+      "Lamborghini", "Lexus", "Lotus", "Maserati", "McLaren", "Mercedes", 
+      "Mitsubishi", "Pagani", "Porsche", "Rang Rover", "Rimac", 
+      "Rolls Royce", "Tesla", "Toyota", "Volkswagen"
+    ];
+    
+    // Format each name (Capitalize both words + fix Rolls Royce)
+    const formatted = rawBrands.map(b => formatBrandName(b));
+    
+    // Sort alphabetically
+    const sorted = formatted.sort((a, b) => a.localeCompare(b));
+    
+    return ["All Brands", ...sorted];
+  }, []);
 
   useEffect(() => {
     const fetchCars = async () => {
@@ -26,26 +63,28 @@ const Home = () => {
     fetchCars();
   }, [API_BASE]);
 
-  /**
-   * OPTIMIZATION 1: useMemo
-   * The filtering logic only re-runs when 'cars' or 'searchQuery' changes.
-   * This prevents expensive array operations on every unrelated re-render.
-   */
   const filteredCars = useMemo(() => {
+    let result = cars;
     const searchTerm = searchQuery.toLowerCase().trim();
-    if (!searchTerm) return cars;
 
-    return cars.filter((car) => 
-      car.brand?.toLowerCase().includes(searchTerm) ||
-      car.Name?.toLowerCase().includes(searchTerm)
-    );
-  }, [cars, searchQuery]);
+    if (selectedBrand !== "All Brands") {
+      result = result.filter(car => {
+        // We compare using formatBrandName to ensure the match works with our UI list
+        const formattedCarBrand = formatBrandName(car.brand);
+        return formattedCarBrand === selectedBrand;
+      });
+    }
 
-  /**
-   * OPTIMIZATION 2: useCallback
-   * Memoizes the navigation function to prevent child components from 
-   * thinking the prop has changed.
-   */
+    if (searchTerm) {
+      result = result.filter((car) => 
+        car.brand?.toLowerCase().includes(searchTerm) ||
+        car.Name?.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    return result;
+  }, [cars, searchQuery, selectedBrand]);
+
   const handleCardClick = useCallback((id) => {
     navigate(`/detail/${id}`);
   }, [navigate]);
@@ -60,22 +99,47 @@ const Home = () => {
             className="w-full h-full object-cover"
             alt="Hero Background"
             src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=2070"
-            loading="lazy" // OPTIMIZATION: Browser-level lazy loading for images
+            loading="lazy"
           />
         </div>
-        <div className="relative z-30 text-center px-4 max-w-4xl mx-auto">
+        
+        <div className="relative z-30 text-center px-4 w-full max-w-4xl mx-auto">
           <h1 className="text-5xl md:text-7xl font-black mb-8">
             FIND YOUR NEXT <span className="text-[#0da6f2] italic">OBSESSION</span>
           </h1>
-          <div className="bg-white/10 backdrop-blur-md p-2 rounded-2xl max-w-2xl mx-auto flex items-center gap-2 border border-white/10">
+
+          <div className="bg-white/10 backdrop-blur-md p-2 rounded-2xl max-w-3xl mx-auto flex items-center gap-2 border border-white/10">
+            
+            <div className="relative flex items-center justify-center h-14 w-14 min-w-[56px]">
+              <div className={`absolute inset-0 flex items-center justify-center pointer-events-none transition-colors ${selectedBrand !== "All Brands" ? "text-[#0da6f2]" : "text-gray-400"}`}>
+                <Filter size={22} strokeWidth={selectedBrand !== "All Brands" ? 3 : 2} />
+              </div>
+              
+              <select 
+                value={selectedBrand}
+                onChange={(e) => setSelectedBrand(e.target.value)}
+                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full min-w-[200px]"
+                title="Filter by Brand"
+              >
+                {brands.map(brand => (
+                  <option key={brand} value={brand} className="bg-[#1a1a1a] text-white py-2">
+                    {brand}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="w-[1px] h-8 bg-white/20 hidden md:block"></div>
+
             <input
-              className="bg-transparent border-none focus:ring-0 text-white w-full py-4 px-6 text-lg placeholder:text-gray-400"
-              placeholder="Search Ferrari, Porsche, Lamborghini..."
+              className="bg-transparent border-none focus:ring-0 text-white w-full py-4 px-2 text-lg placeholder:text-gray-400"
+              placeholder="Search model or name..."
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <button className="bg-[#0da6f2] hover:bg-blue-600 px-8 py-4 rounded-xl text-white font-bold transition-all">
+
+            <button className="hidden md:block bg-[#0da6f2] hover:bg-blue-600 px-8 py-4 rounded-xl text-white font-bold transition-all active:scale-95">
               SEARCH
             </button>
           </div>
@@ -85,10 +149,25 @@ const Home = () => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 -mt-10 relative z-40 pb-24">
         <section className="mb-5">
-          <div className="flex items-center justify-between mb-8 px-4">
+          <div className="flex flex-col md:flex-row items-center justify-between mb-8 px-4 gap-4">
             <h2 className="text-3xl font-black uppercase italic">
-              {searchQuery ? "Search Results" : "Trending"} <span className="text-[#0da6f2]">Reviews</span>
+              {searchQuery || selectedBrand !== "All Brands" ? (
+                <>Filtered <span className="text-[#0da6f2]">Results</span></>
+              ) : (
+                <>Trending <span className="text-[#0da6f2]">Reviews</span></>
+              )}
             </h2>
+            
+            {(searchQuery || selectedBrand !== "All Brands") && (
+               <button 
+                onClick={() => { setSearchQuery(""); setSelectedBrand("All Brands"); }}
+                className="text-xs bg-[#0da6f2]/10 hover:bg-[#0da6f2]/20 text-[#0da6f2] border border-[#0da6f2]/30 px-4 py-2 rounded-full flex items-center gap-2 transition-all font-bold"
+               >
+                 {selectedBrand !== "All Brands" && <span className="uppercase">{selectedBrand}</span>}
+                 {searchQuery && <span>"{searchQuery}"</span>}
+                 <X size={14} />
+               </button>
+            )}
           </div>
 
           {loading ? (
@@ -111,12 +190,12 @@ const Home = () => {
 
           {!loading && filteredCars.length === 0 && (
             <div className="text-center py-20 bg-white/5 rounded-3xl border border-dashed border-white/20">
-              <p className="text-2xl font-bold text-gray-400">No cars found matching "{searchQuery}"</p>
+              <p className="text-2xl font-bold text-gray-400">No matching vehicles found</p>
               <button 
-                onClick={() => setSearchQuery("")}
+                onClick={() => { setSearchQuery(""); setSelectedBrand("All Brands"); }}
                 className="mt-4 text-[#0da6f2] hover:underline"
               >
-                Clear Search
+                Reset all filters
               </button>
             </div>
           )}
