@@ -152,9 +152,11 @@ const AddCar = () => {
                 label="Brand"
                 value={state.brand}
                 onChange={(e) => dispatch({ type: "SET", field: "brand", value: e.target.value })}
-                options={["Aston Martin", "Audi", "Bentley", "BMW", "Ferrari", "Lamborghini", "Lexus", "Maserati", "McLaren", "Mercedes", "Pagani", "Porsche", "Tesla"]}
+                options={[
+                  "alpha romio", "Aston Martin", "Audi", "Bentley", "BMW", "bugatti", "cadillac", "Dodge", "Ferrari", "ford", "GMC", "jaguar", "Lamborghini", "Lexus", "lotus", "Maserati", "McLaren", "Mercedes", "mitsubishi", "Pagani", "Porsche", "rang rover", "rimac", "rolls royals", "Tesla", "toyota", "volkswagen"
+                ]}
               />
-              <Input label="Price (₹)" name="price" state={state} dispatch={dispatch} placeholder="0.00" />
+              <Input label="Price ($)" name="price" state={state} dispatch={dispatch} placeholder="0.00" />
               <Input label="Know More URL" name="knowMore" state={state} dispatch={dispatch} placeholder="https://..." />
             </Grid>
           </Section>
@@ -205,7 +207,6 @@ const AddCar = () => {
           </Section>
 
           <div className="flex justify-end gap-4">
-            {/* REMOVED CANCEL - ADDED RESET BUTTON */}
             <button 
               type="button" 
               onClick={() => dispatch({ type: "RESET" })} 
@@ -267,7 +268,7 @@ const Select = ({ label, value, onChange, options }) => (
     >
       <option value="" className="bg-[#101c22] text-white">Select Option</option>
       {options.map((o) => (
-        <option key={o} value={o} className="bg-[#101c22] text-white">
+        <option key={o} value={o} className="bg-[#101c22] text-white capitalize">
           {o}
         </option>
       ))}
@@ -290,6 +291,4 @@ const Slider = ({ label, name, value, dispatch }) => (
   </div>
 );
 
-
 export default AddCar;
-
