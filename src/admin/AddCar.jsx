@@ -56,9 +56,9 @@ const AddCar = () => {
   const navigate = useNavigate();
   const [state, dispatch] = useReducer(reducer, initialState);
   const [loading, setLoading] = useState(false);
+  const [brandLoading, setBrandLoading] = useState(false); // ✅ New state for brand save loader
   const [modal, setModal] = useState(null);
   
-  // State for brands fetched from backend
   const [dbBrands, setDbBrands] = useState([]);
   const [showBrandInput, setShowBrandInput] = useState(false);
   const [newBrandName, setNewBrandName] = useState("");
@@ -78,11 +78,10 @@ const AddCar = () => {
       .join(' ');
   };
 
-  /* ---------------- FETCH BRANDS FROM BACKEND ---------------- */
+  /* ---------------- FETCH BRANDS ---------------- */
   const fetchBrands = async () => {
     try {
       const res = await axios.get(`${API_BASE}/get_brands`);
-      // Assuming res.data is an array of objects like [{name: "Audi"}, {name: "BMW"}]
       setDbBrands(res.data.map(b => b.name));
     } catch (err) {
       console.error("Error fetching brands", err);
@@ -93,25 +92,27 @@ const AddCar = () => {
     fetchBrands();
   }, []);
 
-  /* ---------------- ADD NEW BRAND TO DATABASE ---------------- */
+  /* ---------------- ADD NEW BRAND ---------------- */
   const handleAddBrand = async () => {
     if (!newBrandName) return;
+    setBrandLoading(true); // ✅ Start loading
     try {
       const formatted = formatBrandName(newBrandName);
-      await axios.post(`${API_BASE}/add_brand`, { name: formatted });
+      // Backend expects: { "brands": ["Name"] } or your fallback { "name": "Name" }
+      // Based on your previous logic, sending as an array is safer now:
+      await axios.post(`${API_BASE}/add_brand`, { brands: [formatted] });
       
-      // Refresh list from backend to include the new brand
       await fetchBrands(); 
-      
       dispatch({ type: "SET", field: "brand", value: formatted });
       setShowBrandInput(false);
       setNewBrandName("");
     } catch (err) {
       alert(err.response?.data?.error || "Error adding brand");
+    } finally {
+      setBrandLoading(false); // ✅ Stop loading
     }
   };
 
-  // Memoized options fetched from backend
   const brandOptions = useMemo(() => {
     return dbBrands
       .map(b => formatBrandName(b))
@@ -185,7 +186,6 @@ const AddCar = () => {
             <Grid>
               <Input label="Vehicle Name" name="Name" state={state} dispatch={dispatch} placeholder="e.g. Model S Plaid" />
               
-              {/* THEMED BRAND DROPDOWN */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs text-slate-400 font-medium">Brand</label>
                 {!showBrandInput ? (
@@ -211,11 +211,26 @@ const AddCar = () => {
                     <input
                       className="flex-1 bg-[#101c22]/50 border border-[#223c49] rounded-lg p-2.5 text-sm text-white outline-none focus:border-[#0da6f2]"
                       placeholder="Enter brand name..."
+                      disabled={brandLoading}
                       value={newBrandName}
                       onChange={(e) => setNewBrandName(e.target.value)}
                     />
-                    <button type="button" onClick={handleAddBrand} className="bg-[#0da6f2] px-4 rounded-lg text-xs font-bold hover:brightness-110 transition-all">SAVE</button>
-                    <button type="button" onClick={() => setShowBrandInput(false)} className="bg-red-500/20 text-red-500 border border-red-500/30 px-4 rounded-lg text-xs font-bold transition-all">X</button>
+                    <button 
+                      type="button" 
+                      onClick={handleAddBrand} 
+                      disabled={brandLoading || !newBrandName}
+                      className="bg-[#0da6f2] px-4 rounded-lg text-xs font-bold hover:brightness-110 transition-all disabled:opacity-50 flex items-center justify-center min-w-[70px]"
+                    >
+                      {brandLoading ? <Loader2 size={16} className="animate-spin" /> : "SAVE"}
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => setShowBrandInput(false)} 
+                      disabled={brandLoading}
+                      className="bg-red-500/20 text-red-500 border border-red-500/30 px-4 rounded-lg text-xs font-bold transition-all disabled:opacity-50"
+                    >
+                      X
+                    </button>
                   </div>
                 )}
               </div>
@@ -225,6 +240,7 @@ const AddCar = () => {
             </Grid>
           </Section>
 
+          {/* ... Rest of the sections remain same ... */}
           <Section title="Technical Specs" icon={<Settings className="mb-2" />}>
             <Grid cols="md:grid-cols-3">
               <Input label="Engine Type" name="Engine" state={state} dispatch={dispatch} placeholder="V8, Electric..." />
@@ -293,7 +309,7 @@ const AddCar = () => {
   );
 };
 
-/* --- COMPONENTS --- */
+/* --- SHARED COMPONENTS --- */
 const Section = ({ title, icon, children }) => (
   <section className="bg-[#1a2b34]/30 border border-[#223c49] rounded-xl p-6 shadow-sm">
     <div className="flex items-center gap-2 mb-6 text-[#0da6f2]"> {icon} <h2 className="text-lg font-bold">{title}</h2> </div>
@@ -303,20 +319,33 @@ const Section = ({ title, icon, children }) => (
 
 const Grid = ({ children, cols = "md:grid-cols-2" }) => ( <div className={`grid grid-cols-1 ${cols} gap-x-6 gap-y-4`}>{children}</div> );
 
-const Input = ({ label, name, state, dispatch, placeholder }) => (
+const Input = ({ label, name, state, dispatch, placeholder, disabled }) => (
   <div className="flex flex-col gap-1.5">
     <label className="text-xs text-slate-400 font-medium">{label}</label>
-    <input value={state[name]} onChange={(e) => dispatch({ type: "SET", field: name, value: e.target.value })} placeholder={placeholder} className="bg-[#101c22]/50 border border-[#223c49] rounded-lg p-2.5 text-sm text-white outline-none focus:border-[#0da6f2] transition-colors" />
+    <input 
+      disabled={disabled}
+      value={state[name]} 
+      onChange={(e) => dispatch({ type: "SET", field: name, value: e.target.value })} 
+      placeholder={placeholder} 
+      className="bg-[#101c22]/50 border border-[#223c49] rounded-lg p-2.5 text-sm text-white outline-none focus:border-[#0da6f2] transition-colors disabled:opacity-50" 
+    />
   </div>
 );
 
 const Select = ({ label, value, onChange, options }) => (
   <div className="flex flex-col gap-1.5">
     <label className="text-xs text-slate-400 font-medium">{label}</label>
-    <select value={value} onChange={onChange} className="w-full bg-[#101c22]/50 border border-[#223c49] rounded-lg p-2.5 text-sm text-white outline-none focus:border-[#0da6f2] cursor-pointer appearance-none transition-all" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%230da6f2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', backgroundSize: '1rem' }}>
-      <option value="" className="bg-[#101c22]">Select Option</option>
-      {options.map((o) => ( <option key={o} value={o} className="bg-[#101c22]">{o}</option> ))}
-    </select>
+    <div className="relative">
+      <select 
+        value={value} 
+        onChange={onChange} 
+        className="w-full bg-[#101c22]/50 border border-[#223c49] rounded-lg p-2.5 text-sm text-white outline-none focus:border-[#0da6f2] cursor-pointer appearance-none transition-all" 
+        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%230da6f2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', backgroundSize: '1rem' }}
+      >
+        <option value="" className="bg-[#101c22]">Select Option</option>
+        {options.map((o) => ( <option key={o} value={o} className="bg-[#101c22]">{o}</option> ))}
+      </select>
+    </div>
   </div>
 );
 
