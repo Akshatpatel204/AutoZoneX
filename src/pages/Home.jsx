@@ -8,6 +8,7 @@ import Footer from '../component/Footer';
 const Home = () => {
   const navigate = useNavigate();
   const [cars, setCars] = useState([]);
+  const [dbBrands, setDbBrands] = useState([]); // ✅ State for dynamic brands
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBrand, setSelectedBrand] = useState("All Brands");
@@ -19,8 +20,9 @@ const Home = () => {
    */
   const formatBrandName = (str) => {
     if (!str) return "";
-    // Correct specific spelling first
-    let fixedStr = str.toLowerCase() === "rolls royals" ? "rolls royce" : str;
+    let fixedStr = str.toLowerCase() === "rolls royals" || str.toLowerCase() === "rolls-royce" 
+      ? "rolls royce" 
+      : str;
     
     return fixedStr
       .split(' ')
@@ -29,26 +31,33 @@ const Home = () => {
   };
 
   /**
-   * Alphabetically sorted and formatted brand list
+   * 1. Fetch Dynamic Brands from Backend
    */
-  const brands = useMemo(() => {
-    const rawBrands = [
-      "Alpha Romio", "Aston Martin", "Audi", "Bentley", "BMW", 
-      "Bugatti", "Cadillac", "Dodge", "Ferrari", "Ford", "GMC", "Jaguar", 
-      "Lamborghini", "Lexus", "Lotus", "Maserati", "McLaren", "Mercedes", 
-      "Mitsubishi", "Pagani", "Porsche", "Range Rover", "Rimac", 
-      "Rolls Royce", "Tesla", "Toyota", "Volkswagen"
-    ];
-    
-    // Format each name (Capitalize both words + fix Rolls Royce)
-    const formatted = rawBrands.map(b => formatBrandName(b));
-    
-    // Sort alphabetically
-    const sorted = formatted.sort((a, b) => a.localeCompare(b));
-    
-    return ["All Brands", ...sorted];
-  }, []);
+  useEffect(() => {
+    const fetchBrands = async () => {
+      try {
+        const res = await axios.get(`${API_BASE}/get_brands`);
+        // Assuming backend returns [{name: "Audi"}, {name: "BMW"}]
+        setDbBrands(res.data.map(b => b.name));
+      } catch (err) {
+        console.error("Error fetching brands:", err);
+      }
+    };
+    fetchBrands();
+  }, [API_BASE]);
 
+  /**
+   * 2. Alphabetically sorted and formatted brand list for the Select Menu
+   */
+  const brandsList = useMemo(() => {
+    const formatted = dbBrands.map(b => formatBrandName(b));
+    const sorted = formatted.sort((a, b) => a.localeCompare(b));
+    return ["All Brands", ...sorted];
+  }, [dbBrands]);
+
+  /**
+   * 3. Fetch All Cars
+   */
   useEffect(() => {
     const fetchCars = async () => {
       try {
@@ -63,13 +72,15 @@ const Home = () => {
     fetchCars();
   }, [API_BASE]);
 
+  /**
+   * 4. Filtering Logic
+   */
   const filteredCars = useMemo(() => {
     let result = cars;
     const searchTerm = searchQuery.toLowerCase().trim();
 
     if (selectedBrand !== "All Brands") {
       result = result.filter(car => {
-        // We compare using formatBrandName to ensure the match works with our UI list
         const formattedCarBrand = formatBrandName(car.brand);
         return formattedCarBrand === selectedBrand;
       });
@@ -121,7 +132,7 @@ const Home = () => {
                 className="absolute inset-0 opacity-0 cursor-pointer w-full h-full min-w-[200px]"
                 title="Filter by Brand"
               >
-                {brands.map(brand => (
+                {brandsList.map(brand => (
                   <option key={brand} value={brand} className="bg-[#1a1a1a] text-white py-2">
                     {brand}
                   </option>
@@ -207,4 +218,3 @@ const Home = () => {
 };
 
 export default Home;
-
