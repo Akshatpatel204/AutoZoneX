@@ -93,25 +93,26 @@ const AddCar = () => {
   }, []);
 
   /* ---------------- ADD NEW BRAND ---------------- */
-  const handleAddBrand = async () => {
-    if (!newBrandName) return;
-    setBrandLoading(true); // ✅ Start loading
-    try {
-      const formatted = formatBrandName(newBrandName);
-      // Backend expects: { "brands": ["Name"] } or your fallback { "name": "Name" }
-      // Based on your previous logic, sending as an array is safer now:
-      await axios.post(`${API_BASE}/add_brand`, { brands: [formatted] });
-      
-      await fetchBrands(); 
-      dispatch({ type: "SET", field: "brand", value: formatted });
-      setShowBrandInput(false);
-      setNewBrandName("");
-    } catch (err) {
-      alert(err.response?.data?.error || "Error adding brand");
-    } finally {
-      setBrandLoading(false); // ✅ Stop loading
-    }
-  };
+const handleAddBrand = async () => {
+  if (!newBrandName) return;
+  setBrandLoading(true); 
+  try {
+    const formatted = formatBrandName(newBrandName);
+    
+    // ✅ Change this line to use "name" to match your server's single-add logic
+    await axios.post(`${API_BASE}/add_brand`, { name: formatted });
+    
+    await fetchBrands(); 
+    dispatch({ type: "SET", field: "brand", value: formatted });
+    setShowBrandInput(false);
+    setNewBrandName("");
+  } catch (err) {
+    // This will now catch the "Brand already exists" error correctly
+    alert(err.response?.data?.error || "Error adding brand");
+  } finally {
+    setBrandLoading(false);
+  }
+};
 
   const brandOptions = useMemo(() => {
     return dbBrands
@@ -357,4 +358,5 @@ const Slider = ({ label, name, value, dispatch }) => (
 );
 
 export default AddCar;
+
 
