@@ -292,7 +292,7 @@ const AddCar = () => {
               onClick={() => dispatch({ type: "RESET" })} 
               className="px-6 py-3 rounded-xl border border-yellow-500/30 text-yellow-500 hover:bg-yellow-500/10 transition-all flex items-center gap-2 font-bold"
             >
-              <RotateCcw size={18} /> Reset
+              <RotateCcw size={18} /> Reset Details
             </button>
             <button
               type="submit"
@@ -357,3 +357,4 @@ const Slider = ({ label, name, value, dispatch }) => (
 );
 
 export default AddCar;
+
