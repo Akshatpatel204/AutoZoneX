@@ -1,4 +1,4 @@
-import React, { useReducer, useState, useMemo } from "react";
+import React, { useReducer, useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
@@ -12,7 +12,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
-  RotateCcw, // Added for the Reset icon
+  RotateCcw,
 } from "lucide-react";
 
 /* ---------------- INITIAL STATE ---------------- */
@@ -57,11 +57,17 @@ const AddCar = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [loading, setLoading] = useState(false);
   const [modal, setModal] = useState(null);
+  
+  // State for brands fetched from backend
+  const [dbBrands, setDbBrands] = useState([]);
+  const [showBrandInput, setShowBrandInput] = useState(false);
+  const [newBrandName, setNewBrandName] = useState("");
+
+  const API_BASE = import.meta.env.VITE_backendapi;
 
   /* ---------------- FORMATTING HELPERS ---------------- */
   const formatBrandName = (str) => {
     if (!str) return "";
-    // Correct spelling and capitalization for multi-word brands
     let fixedStr = str.toLowerCase() === "rolls-royce" || str.toLowerCase() === "rolls royals" 
       ? "rolls royce" 
       : str;
@@ -72,22 +78,47 @@ const AddCar = () => {
       .join(' ');
   };
 
-  // Memoized sorted and formatted brand list
-  const brandOptions = useMemo(() => {
-    const rawBrands = [
-      "alpha romio", "Aston Martin", "Audi", "Bentley", "BMW", "bugatti", 
-      "cadillac", "Dodge", "Ferrari", "ford", "GMC", "jaguar", "Lamborghini", 
-      "Lexus", "lotus", "Maserati", "McLaren", "Mini cooper","Mercedes", "mitsubishi", 
-      "Pagani", "Porsche", "rang rover", "rimac", "rolls-royce", "Tesla", 
-      "toyota", "volkswagen"
-    ];
+  /* ---------------- FETCH BRANDS FROM BACKEND ---------------- */
+  const fetchBrands = async () => {
+    try {
+      const res = await axios.get(`${API_BASE}/get_brands`);
+      // Assuming res.data is an array of objects like [{name: "Audi"}, {name: "BMW"}]
+      setDbBrands(res.data.map(b => b.name));
+    } catch (err) {
+      console.error("Error fetching brands", err);
+    }
+  };
 
-    return rawBrands
-      .map(b => formatBrandName(b))
-      .sort((a, b) => a.localeCompare(b));
+  useEffect(() => {
+    fetchBrands();
   }, []);
 
-  /* ---------------- VALIDATION ---------------- */
+  /* ---------------- ADD NEW BRAND TO DATABASE ---------------- */
+  const handleAddBrand = async () => {
+    if (!newBrandName) return;
+    try {
+      const formatted = formatBrandName(newBrandName);
+      await axios.post(`${API_BASE}/add_brand`, { name: formatted });
+      
+      // Refresh list from backend to include the new brand
+      await fetchBrands(); 
+      
+      dispatch({ type: "SET", field: "brand", value: formatted });
+      setShowBrandInput(false);
+      setNewBrandName("");
+    } catch (err) {
+      alert(err.response?.data?.error || "Error adding brand");
+    }
+  };
+
+  // Memoized options fetched from backend
+  const brandOptions = useMemo(() => {
+    return dbBrands
+      .map(b => formatBrandName(b))
+      .sort((a, b) => a.localeCompare(b));
+  }, [dbBrands]);
+
+  /* ---------------- VALIDATION & SUBMIT ---------------- */
   const isValid = () => {
     for (let key in state) {
       if (["intImg", "frontImg", "rearImg"].includes(key)) continue;
@@ -96,47 +127,25 @@ const AddCar = () => {
     return true;
   };
 
-  /* ---------------- SUBMIT ---------------- */
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!isValid()) {
-      setModal({
-        status: 400,
-        message: "Please fill all required fields.",
-      });
+      setModal({ status: 400, message: "Please fill all required fields." });
       return;
     }
-
     setLoading(true);
 
     const payload = {
       ...state,
-      images: [
-        state.mainImg,
-        state.intImg,
-        state.frontImg,
-        state.rearImg,
-      ].filter(Boolean)
+      images: [state.mainImg, state.intImg, state.frontImg, state.rearImg].filter(Boolean)
     };
 
     try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_backendapi}/add_car_detail`,
-        payload
-      );
-
-      setModal({
-        status: res.status,
-        message: res.data.message || "Vehicle added successfully",
-      });
-
+      const res = await axios.post(`${API_BASE}/add_car_detail`, payload);
+      setModal({ status: res.status, message: res.data.message || "Vehicle added successfully" });
       if (res.status === 201) dispatch({ type: "RESET" });
     } catch (err) {
-      setModal({
-        status: err.response?.status || 500,
-        message: err.response?.data?.error || "Server error",
-      });
+      setModal({ status: err.response?.status || 500, message: err.response?.data?.error || "Server error" });
     } finally {
       setLoading(false);
     }
@@ -146,7 +155,6 @@ const AddCar = () => {
 
   return (
     <>
-      {/* ---------------- MODAL ---------------- */}
       {modal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
           <div className="w-full max-w-sm bg-[#101c22] border border-[#223c49] rounded-2xl shadow-2xl">
@@ -170,19 +178,48 @@ const AddCar = () => {
         </div>
       )}
 
-      {/* ---------------- FORM ---------------- */}
       <div className="max-w-5xl mx-auto text-white p-2">
         <form onSubmit={handleSubmit} className="space-y-6 pb-20">
           
           <Section title="Basic Info" icon={<Info className="mb-2" />}>
             <Grid>
               <Input label="Vehicle Name" name="Name" state={state} dispatch={dispatch} placeholder="e.g. Model S Plaid" />
-              <Select
-                label="Brand"
-                value={state.brand}
-                onChange={(e) => dispatch({ type: "SET", field: "brand", value: e.target.value })}
-                options={brandOptions}
-              />
+              
+              {/* THEMED BRAND DROPDOWN */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs text-slate-400 font-medium">Brand</label>
+                {!showBrandInput ? (
+                  <div className="flex gap-2">
+                    <select
+                      value={state.brand}
+                      onChange={(e) => {
+                        if (e.target.value === "ADD_NEW") setShowBrandInput(true);
+                        else dispatch({ type: "SET", field: "brand", value: e.target.value });
+                      }}
+                      className="flex-1 bg-[#101c22]/50 border border-[#223c49] rounded-lg p-2.5 text-sm text-white outline-none focus:border-[#0da6f2] cursor-pointer appearance-none transition-all"
+                      style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%230da6f2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', backgroundSize: '1rem' }}
+                    >
+                      <option value="" className="bg-[#101c22]">Select Brand</option>
+                      <option value="ADD_NEW" className="bg-[#101c22] text-[#0da6f2] font-bold">+ Add New Brand</option>
+                      {brandOptions.map((o) => (
+                        <option key={o} value={o} className="bg-[#101c22]">{o}</option>
+                      ))}
+                    </select>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      className="flex-1 bg-[#101c22]/50 border border-[#223c49] rounded-lg p-2.5 text-sm text-white outline-none focus:border-[#0da6f2]"
+                      placeholder="Enter brand name..."
+                      value={newBrandName}
+                      onChange={(e) => setNewBrandName(e.target.value)}
+                    />
+                    <button type="button" onClick={handleAddBrand} className="bg-[#0da6f2] px-4 rounded-lg text-xs font-bold hover:brightness-110 transition-all">SAVE</button>
+                    <button type="button" onClick={() => setShowBrandInput(false)} className="bg-red-500/20 text-red-500 border border-red-500/30 px-4 rounded-lg text-xs font-bold transition-all">X</button>
+                  </div>
+                )}
+              </div>
+
               <Input label="Price ($)" name="price" state={state} dispatch={dispatch} placeholder="0.00" />
               <Input label="Know More URL" name="knowMore" state={state} dispatch={dispatch} placeholder="https://..." />
             </Grid>
@@ -190,7 +227,7 @@ const AddCar = () => {
 
           <Section title="Technical Specs" icon={<Settings className="mb-2" />}>
             <Grid cols="md:grid-cols-3">
-              <Input label="Engine Type" name="Engine" state={state} dispatch={dispatch} placeholder="V8, Electric, Hybrid..." />
+              <Input label="Engine Type" name="Engine" state={state} dispatch={dispatch} placeholder="V8, Electric..." />
               <Input label="Max Speed (MPH)" name="Speed" state={state} dispatch={dispatch} placeholder="200" />
               <Select
                 label="Fuel Type"
@@ -198,10 +235,10 @@ const AddCar = () => {
                 onChange={(e) => dispatch({ type: "SET", field: "FuelType", value: e.target.value })}
                 options={["Gasoline", "Electric", "Hybrid", "Petrol" , "Diesel"]}
               />
-              <Input label="Max Engine Torque (lb-ft)" name="MaxEngineTorque" state={state} dispatch={dispatch} placeholder="750" />
+              <Input label="Max Torque (lb-ft)" name="MaxEngineTorque" state={state} dispatch={dispatch} placeholder="750" />
               <Input label="Horsepower" name="Horsepower" state={state} dispatch={dispatch} placeholder="1020" />
               <Input label="0-60 MPH (sec)" name="mph" state={state} dispatch={dispatch} placeholder="1.99" />
-              <Input label="Transmission" name="Transmission" state={state} dispatch={dispatch} placeholder="e.g. 7-Speed Dual-Clutch" />
+              <Input label="Transmission" name="Transmission" state={state} dispatch={dispatch} placeholder="7-Speed DCT" />
               <Select
                 label="Drivetrain"
                 value={state.Drivetrain}
@@ -214,7 +251,7 @@ const AddCar = () => {
           <Section title="Chassis" icon={<Zap className="mb-2" />}>
             <Grid>
               <Input label="Front Brakes" name="FrontBrakes" state={state} dispatch={dispatch} placeholder="Carbon Ceramic" />
-              <Input label="Rear Brakes" name="RearBrakes" state={state} dispatch={dispatch} placeholder="Hydraulic Ventilated" />
+              <Input label="Rear Brakes" name="RearBrakes" state={state} dispatch={dispatch} placeholder="Hydraulic" />
             </Grid>
           </Section>
 
@@ -239,10 +276,8 @@ const AddCar = () => {
               onClick={() => dispatch({ type: "RESET" })} 
               className="px-6 py-3 rounded-xl border border-yellow-500/30 text-yellow-500 hover:bg-yellow-500/10 transition-all flex items-center gap-2 font-bold"
             >
-              <RotateCcw size={18} />
-              Reset Details
+              <RotateCcw size={18} /> Reset
             </button>
-
             <button
               type="submit"
               disabled={loading}
@@ -258,65 +293,38 @@ const AddCar = () => {
   );
 };
 
-/* ---------------- HELPERS ---------------- */
+/* --- COMPONENTS --- */
 const Section = ({ title, icon, children }) => (
-  <section className="bg-[#1a2b34]/30 border border-[#223c49] rounded-xl p-6">
-    <div className="flex items-center gap-2 mb-6 text-[#0da6f2]">
-      {icon}
-      <h2 className="text-lg font-bold">{title}</h2>
-    </div>
+  <section className="bg-[#1a2b34]/30 border border-[#223c49] rounded-xl p-6 shadow-sm">
+    <div className="flex items-center gap-2 mb-6 text-[#0da6f2]"> {icon} <h2 className="text-lg font-bold">{title}</h2> </div>
     {children}
   </section>
 );
 
-const Grid = ({ children, cols = "md:grid-cols-2" }) => (
-  <div className={`grid grid-cols-1 ${cols} gap-x-6 gap-y-4`}>{children}</div>
-);
+const Grid = ({ children, cols = "md:grid-cols-2" }) => ( <div className={`grid grid-cols-1 ${cols} gap-x-6 gap-y-4`}>{children}</div> );
 
 const Input = ({ label, name, state, dispatch, placeholder }) => (
   <div className="flex flex-col gap-1.5">
     <label className="text-xs text-slate-400 font-medium">{label}</label>
-    <input
-      value={state[name]}
-      onChange={(e) => dispatch({ type: "SET", field: name, value: e.target.value })}
-      placeholder={placeholder}
-      className="bg-[#101c22]/50 border border-[#223c49] rounded-lg p-2.5 text-sm text-white outline-none focus:border-[#0da6f2] transition-colors"
-    />
+    <input value={state[name]} onChange={(e) => dispatch({ type: "SET", field: name, value: e.target.value })} placeholder={placeholder} className="bg-[#101c22]/50 border border-[#223c49] rounded-lg p-2.5 text-sm text-white outline-none focus:border-[#0da6f2] transition-colors" />
   </div>
 );
 
 const Select = ({ label, value, onChange, options }) => (
   <div className="flex flex-col gap-1.5">
     <label className="text-xs text-slate-400 font-medium">{label}</label>
-    <select
-      value={value}
-      onChange={onChange}
-      className="w-full bg-[#101c22]/50 border border-[#223c49] rounded-lg p-2.5 text-sm text-white outline-none focus:border-[#0da6f2] cursor-pointer"
-    >
-      <option value="" className="bg-[#101c22] text-white">Select Option</option>
-      {options.map((o) => (
-        <option key={o} value={o} className="bg-[#101c22] text-white">
-          {o}
-        </option>
-      ))}
+    <select value={value} onChange={onChange} className="w-full bg-[#101c22]/50 border border-[#223c49] rounded-lg p-2.5 text-sm text-white outline-none focus:border-[#0da6f2] cursor-pointer appearance-none transition-all" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%230da6f2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', backgroundSize: '1rem' }}>
+      <option value="" className="bg-[#101c22]">Select Option</option>
+      {options.map((o) => ( <option key={o} value={o} className="bg-[#101c22]">{o}</option> ))}
     </select>
   </div>
 );
 
 const Slider = ({ label, name, value, dispatch }) => (
   <div className="mb-6 relative">
-    <div className="flex justify-between mb-2">
-      <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">{label}</span>
-      <span className="text-[#0da6f2] text-xs font-bold">{value}</span>
-    </div>
-    <input
-      type="range" min="1" max="10"
-      value={value}
-      onChange={(e) => dispatch({ type: "SET", field: name, value: e.target.value })}
-      className="w-full accent-[#0da6f2] cursor-pointer h-1.5 bg-[#101c22] rounded-lg appearance-none"
-    />
+    <div className="flex justify-between mb-2"> <span className="text-xs text-slate-400 font-medium uppercase">{label}</span> <span className="text-[#0da6f2] text-xs font-bold">{value}</span> </div>
+    <input type="range" min="1" max="10" value={value} onChange={(e) => dispatch({ type: "SET", field: name, value: e.target.value })} className="w-full accent-[#0da6f2] cursor-pointer h-1.5 bg-[#101c22] rounded-lg appearance-none" />
   </div>
 );
 
 export default AddCar;
-
