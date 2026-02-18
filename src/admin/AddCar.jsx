@@ -77,7 +77,7 @@ const AddCar = () => {
     const rawBrands = [
       "alpha romio", "Aston Martin", "Audi", "Bentley", "BMW", "bugatti", 
       "cadillac", "Dodge", "Ferrari", "ford", "GMC", "jaguar", "Lamborghini", 
-      "Lexus", "lotus", "Maserati", "McLaren", "Mercedes", "mitsubishi", 
+      "Lexus", "lotus", "Maserati", "McLaren", "Mini cooper","Mercedes", "mitsubishi", 
       "Pagani", "Porsche", "rang rover", "rimac", "rolls-royce", "Tesla", 
       "toyota", "volkswagen"
     ];
@@ -319,3 +319,4 @@ const Slider = ({ label, name, value, dispatch }) => (
 );
 
 export default AddCar;
+
