@@ -36,7 +36,7 @@ const Home = () => {
       "Alpha Romio", "Aston Martin", "Audi", "Bentley", "BMW", 
       "Bugatti", "Cadillac", "Dodge", "Ferrari", "Ford", "GMC", "Jaguar", 
       "Lamborghini", "Lexus", "Lotus", "Maserati", "McLaren", "Mercedes", 
-      "Mitsubishi", "Pagani", "Porsche", "Rang Rover", "Rimac", 
+      "Mitsubishi", "Pagani", "Porsche", "Range Rover", "Rimac", 
       "Rolls Royce", "Tesla", "Toyota", "Volkswagen"
     ];
     
@@ -207,3 +207,4 @@ const Home = () => {
 };
 
 export default Home;
+
