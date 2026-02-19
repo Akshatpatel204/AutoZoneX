@@ -190,7 +190,7 @@ const CarDetailsModal = memo(({ car, onClose, onUpdate }) => {
                onChange={(e) => handleInputChange('price', e.target.value)}
               />
             ) : (
-              <div className="text-xl md:text-2xl font-black text-[#0da6f2]">₹{car.price}</div>
+              <div className="text-xl md:text-2xl font-black text-[#0da6f2]">{car.price}</div>
             )}
           </div>
         </div>
@@ -332,4 +332,5 @@ const CarRow = memo(({ car, onInfoClick }) => {
 });
 
 export default Inventory;
+
 
