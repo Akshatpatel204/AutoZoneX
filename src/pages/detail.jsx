@@ -3,13 +3,21 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import '../styles/detail.css';
 import { MdOutlineAnalytics } from "react-icons/md";
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import Footer from '../component/Footer';
+
+// ✅ Import Swiper React components and styles
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination, Autoplay } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 
 const Detail = () => {
     const { id } = useParams();
     const [car, setCar] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [selectedImgIndex, setSelectedImgIndex] = useState(null); // ✅ Track if modal is open
     const API_BASE = import.meta.env.VITE_backendapi;
 
     useEffect(() => {
@@ -49,21 +57,40 @@ const Detail = () => {
 
     return (
         <div className="bg-background-dark text-slate-100 font-sans min-h-screen overflow-x-hidden grid-bg bg-[linear-gradient(to_right,rgba(14,165,233,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(14,165,233,0.05)_1px,transparent_1px)] bg-[size:40px_40px]">
-            {/* Navigation */}
-            {/* <nav className="h-20 border-b border-white/10 flex items-center justify-between px-4 md:px-8 bg-background-dark/90 backdrop-blur-xl sticky top-0 z-50">
-                <div className="flex items-center gap-3 md:gap-6">
-                    <div className="w-8 h-8 md:w-10 md:h-10 bg-white flex items-center justify-center rounded-full p-1 shrink-0">
-                        <svg className="w-full h-full text-black" viewBox="0 0 100 100">
-                            <circle cx="50" cy="50" fill="none" r="48" stroke="currentColor" strokeWidth="2"></circle>
-                            <path d="M50 2 L50 98 M2 50 L98 50" stroke="currentColor" strokeWidth="2"></path>
-                            <text fontSize="12" fontWeight="bold" textAnchor="middle" x="50" y="35">{car.brand?.[0]}</text>
-                        </svg>
+            
+            {/* ✅ Image Popup Modal */}
+            {selectedImgIndex !== null && (
+                <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4">
+                    <button 
+                        onClick={() => setSelectedImgIndex(null)}
+                        className="absolute top-6 right-6 text-white/50 hover:text-white z-[110] transition-colors"
+                    >
+                        <X size={40} />
+                    </button>
+
+                    <div className="w-full max-w-6xl aspect-video">
+                        <Swiper
+                            modules={[Navigation, Pagination, Autoplay]}
+                            initialSlide={selectedImgIndex}
+                            navigation
+                            pagination={{ clickable: true }}
+                            autoplay={{ delay: 3000, disableOnInteraction: false }}
+                            loop={true}
+                            className="h-full rounded-2xl overflow-hidden"
+                        >
+                            {car.images?.map((img, index) => (
+                                <SwiperSlide key={index}>
+                                    <img 
+                                        src={img} 
+                                        alt="Gallery view" 
+                                        className="w-full h-full object-contain bg-black/20"
+                                    />
+                                </SwiperSlide>
+                            ))}
+                        </Swiper>
                     </div>
-                    <span className="font-display text-sm md:text-2xl tracking-[0.1em] md:tracking-[0.2em] font-black text-white uppercase truncate">
-                        {car.brand} {car.Name}
-                    </span>
                 </div>
-            </nav> */}
+            )}
 
             <main className="max-w-[1600px] mx-auto p-4 md:p-6 space-y-8">
                 <div className="space-y-6">
@@ -71,11 +98,12 @@ const Detail = () => {
                     <div className="relative group h-[400px] md:h-[600px] rounded-2xl overflow-hidden glass-panel neon-border">
                         <img
                             alt={car.Name}
-                            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 cursor-pointer"
                             src={car.images?.[0]}
                             loading="eager"
+                            onClick={() => setSelectedImgIndex(0)} // ✅ Open modal from Hero
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/20 to-transparent"></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/20 to-transparent pointer-events-none"></div>
 
                         {/* Telemetry HUD */}
                         <div className="absolute top-6 left-6 md:top-12 md:left-12 space-y-3 md:space-y-4 z-10">
@@ -101,7 +129,6 @@ const Detail = () => {
                             </h2>
                         </div>
 
-                        {/* Know More Button - DESKTOP ONLY */}
                         {hasUrl && (
                              <div className="hidden md:block absolute bottom-10 right-10 z-20">
                                 <button 
@@ -145,12 +172,17 @@ const Detail = () => {
                                 </div>
                             </div>
 
+                            {/* Gallery thumbnails */}
                             <div className="glass-panel p-4 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
                                 {car.images?.map((img, index) => (
-                                    <div key={index} className='border border-gray-800 border-dashed overflow-hidden rounded-2xl aspect-video'>
+                                    <div 
+                                        key={index} 
+                                        className='border border-gray-800 border-dashed overflow-hidden rounded-2xl aspect-video cursor-zoom-in group'
+                                        onClick={() => setSelectedImgIndex(index)} // ✅ Open modal
+                                    >
                                         <img
                                             alt={`${car.Name} detail ${index}`}
-                                            className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
+                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                                             src={img}
                                             loading="lazy"
                                         />
@@ -171,7 +203,6 @@ const Detail = () => {
                                     <CircularProgress score={car.safety_mark} label="Safety Rating" sub="SYSTEM PROTOCOLS" />
                                 </div>
 
-                                {/* Know More Button - MOBILE ONLY (Bottom of Analytics) */}
                                 {hasUrl && (
                                     <div className="md:hidden pt-6 border-t border-white/10">
                                         <button 
@@ -230,6 +261,5 @@ const CircularProgress = React.memo(({ score, label, sub }) => {
         </div>
     );
 });
-
 
 export default Detail;
