@@ -101,7 +101,6 @@ const Detail = () => {
                             className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 cursor-pointer"
                             src={car.images?.[0]}
                             loading="eager"
-                            onClick={() => setSelectedImgIndex(0)} // ✅ Open modal from Hero
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/20 to-transparent pointer-events-none"></div>
 
@@ -263,3 +262,4 @@ const CircularProgress = React.memo(({ score, label, sub }) => {
 });
 
 export default Detail;
+
