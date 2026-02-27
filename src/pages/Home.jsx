@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useNavigate } from "react-router-dom";
 import axios from 'axios';
 import { Filter, X } from 'lucide-react';
@@ -8,16 +8,17 @@ import Footer from '../component/Footer';
 const Home = () => {
   const navigate = useNavigate();
   const [cars, setCars] = useState([]);
-  const [dbBrands, setDbBrands] = useState([]); // ✅ State for dynamic brands
+  const [dbBrands, setDbBrands] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBrand, setSelectedBrand] = useState("All Brands");
+  
+  // ✅ Use a ref to ensure we only pick ONE car per session
+  const randomCarPicked = useRef(false);
+  const [heroImage, setHeroImage] = useState("https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=2070");
 
   const API_BASE = import.meta.env.VITE_backendapi;
 
-  /**
-   * HELPER: Capitalizes every word in a string and fixes specific spellings
-   */
   const formatBrandName = (str) => {
     if (!str) return "";
     let fixedStr = str.toLowerCase() === "rolls royals" || str.toLowerCase() === "rolls-royce" 
@@ -30,14 +31,11 @@ const Home = () => {
       .join(' ');
   };
 
-  /**
-   * 1. Fetch Dynamic Brands from Backend
-   */
+  // 1. Fetch Brands
   useEffect(() => {
     const fetchBrands = async () => {
       try {
         const res = await axios.get(`${API_BASE}/get_brands`);
-        // Assuming backend returns [{name: "Audi"}, {name: "BMW"}]
         setDbBrands(res.data.map(b => b.name));
       } catch (err) {
         console.error("Error fetching brands:", err);
@@ -46,23 +44,22 @@ const Home = () => {
     fetchBrands();
   }, [API_BASE]);
 
-  /**
-   * 2. Alphabetically sorted and formatted brand list for the Select Menu
-   */
-  const brandsList = useMemo(() => {
-    const formatted = dbBrands.map(b => formatBrandName(b));
-    const sorted = formatted.sort((a, b) => a.localeCompare(b));
-    return ["All Brands", ...sorted];
-  }, [dbBrands]);
-
-  /**
-   * 3. Fetch All Cars
-   */
+  // 2. Fetch Cars & Set Random Hero Image (Fixed to run logic once)
   useEffect(() => {
     const fetchCars = async () => {
       try {
         const response = await axios.get(`${API_BASE}/fetch_all_car`);
-        setCars(response.data["data :- "] || []);
+        const carData = response.data["data :- "] || [];
+        setCars(carData);
+
+        // ✅ Check ref so this only sets the image once per refresh
+        if (carData.length > 0 && !randomCarPicked.current) {
+          const randomCar = carData[Math.floor(Math.random() * carData.length)];
+          if (randomCar.images && randomCar.images.length > 0) {
+            setHeroImage(randomCar.images[0]);
+            randomCarPicked.current = true; // Block further changes until next refresh
+          }
+        }
       } catch (error) {
         console.error("Error fetching cars:", error);
       } finally {
@@ -72,18 +69,18 @@ const Home = () => {
     fetchCars();
   }, [API_BASE]);
 
-  /**
-   * 4. Filtering Logic
-   */
+  const brandsList = useMemo(() => {
+    const formatted = dbBrands.map(b => formatBrandName(b));
+    const sorted = formatted.sort((a, b) => a.localeCompare(b));
+    return ["All Brands", ...sorted];
+  }, [dbBrands]);
+
   const filteredCars = useMemo(() => {
     let result = cars;
     const searchTerm = searchQuery.toLowerCase().trim();
 
     if (selectedBrand !== "All Brands") {
-      result = result.filter(car => {
-        const formattedCarBrand = formatBrandName(car.brand);
-        return formattedCarBrand === selectedBrand;
-      });
+      result = result.filter(car => formatBrandName(car.brand) === selectedBrand);
     }
 
     if (searchTerm) {
@@ -92,7 +89,6 @@ const Home = () => {
         car.Name?.toLowerCase().includes(searchTerm)
       );
     }
-
     return result;
   }, [cars, searchQuery, selectedBrand]);
 
@@ -105,37 +101,33 @@ const Home = () => {
       {/* Hero Section */}
       <section className="relative h-[80vh] min-h-[600px] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-black/50 z-10" />
+          <div className="absolute inset-0 bg-black/60 z-10" />
           <img
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover transition-opacity duration-700"
             alt="Hero Background"
-            src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=2070"
-            loading="lazy"
+            src={heroImage}
+            loading="eager"
           />
         </div>
         
         <div className="relative z-30 text-center px-4 w-full max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-7xl font-black mb-8">
+          <h1 className="text-5xl md:text-7xl font-black mb-8 drop-shadow-2xl">
             FIND YOUR NEXT <span className="text-[#0da6f2] italic">OBSESSION</span>
           </h1>
 
-          <div className="bg-white/10 backdrop-blur-md p-2 rounded-2xl max-w-3xl mx-auto flex items-center gap-2 border border-white/10">
-            
+          <div className="bg-white/10 backdrop-blur-md p-2 rounded-2xl max-w-3xl mx-auto flex items-center gap-2 border border-white/10 shadow-2xl">
             <div className="relative flex items-center justify-center h-14 w-14 min-w-[56px]">
               <div className={`absolute inset-0 flex items-center justify-center pointer-events-none transition-colors ${selectedBrand !== "All Brands" ? "text-[#0da6f2]" : "text-gray-400"}`}>
                 <Filter size={22} strokeWidth={selectedBrand !== "All Brands" ? 3 : 2} />
               </div>
-              
               <select 
                 value={selectedBrand}
                 onChange={(e) => setSelectedBrand(e.target.value)}
-                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full min-w-[200px]"
+                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                 title="Filter by Brand"
               >
                 {brandsList.map(brand => (
-                  <option key={brand} value={brand} className="bg-[#1a1a1a] text-white py-2">
-                    {brand}
-                  </option>
+                  <option key={brand} value={brand} className="bg-[#1a1a1a] text-white py-2">{brand}</option>
                 ))}
               </select>
             </div>
@@ -196,18 +188,6 @@ const Home = () => {
                   <Car_card car={car} />
                 </div>
               ))}
-            </div>
-          )}
-
-          {!loading && filteredCars.length === 0 && (
-            <div className="text-center py-20 bg-white/5 rounded-3xl border border-dashed border-white/20">
-              <p className="text-2xl font-bold text-gray-400">No matching vehicles found</p>
-              <button 
-                onClick={() => { setSearchQuery(""); setSelectedBrand("All Brands"); }}
-                className="mt-4 text-[#0da6f2] hover:underline"
-              >
-                Reset all filters
-              </button>
             </div>
           )}
         </section>
