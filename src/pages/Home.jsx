@@ -13,7 +13,7 @@ const Home = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBrand, setSelectedBrand] = useState("All Brands");
   
-  // ✅ Use a ref to ensure we only pick ONE car per session
+  // ✅ Ref to ensure we only pick ONE car per session/refresh
   const randomCarPicked = useRef(false);
   const [heroImage, setHeroImage] = useState("https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=2070");
 
@@ -44,7 +44,7 @@ const Home = () => {
     fetchBrands();
   }, [API_BASE]);
 
-  // 2. Fetch Cars & Set Random Hero Image (Fixed to run logic once)
+  // 2. Fetch Cars & Set Random Hero Image Once
   useEffect(() => {
     const fetchCars = async () => {
       try {
@@ -57,7 +57,7 @@ const Home = () => {
           const randomCar = carData[Math.floor(Math.random() * carData.length)];
           if (randomCar.images && randomCar.images.length > 0) {
             setHeroImage(randomCar.images[0]);
-            randomCarPicked.current = true; // Block further changes until next refresh
+            randomCarPicked.current = true; 
           }
         }
       } catch (error) {
@@ -115,34 +115,34 @@ const Home = () => {
             FIND YOUR NEXT <span className="text-[#0da6f2] italic">OBSESSION</span>
           </h1>
 
-          <div className="bg-white/10 backdrop-blur-md p-2 rounded-2xl max-w-3xl mx-auto flex items-center gap-2 border border-white/10 shadow-2xl">
-            <div className="relative flex items-center justify-center h-14 w-14 min-w-[56px]">
+          {/* ✅ DECREASED WIDTH SEARCH BAR (max-w-xl) */}
+          <div className="bg-white/10 backdrop-blur-md p-2 rounded-2xl max-w-xl mx-auto flex items-center gap-2 border border-white/10 shadow-2xl">
+            <div className="relative flex items-center justify-center h-12 w-12 min-w-[48px]">
               <div className={`absolute inset-0 flex items-center justify-center pointer-events-none transition-colors ${selectedBrand !== "All Brands" ? "text-[#0da6f2]" : "text-gray-400"}`}>
-                <Filter size={22} strokeWidth={selectedBrand !== "All Brands" ? 3 : 2} />
+                <Filter size={20} strokeWidth={selectedBrand !== "All Brands" ? 3 : 2} />
               </div>
               <select 
                 value={selectedBrand}
                 onChange={(e) => setSelectedBrand(e.target.value)}
                 className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                title="Filter by Brand"
               >
                 {brandsList.map(brand => (
-                  <option key={brand} value={brand} className="bg-[#1a1a1a] text-white py-2">{brand}</option>
+                  <option key={brand} value={brand} className="bg-[#1a1a1a] text-white">{brand}</option>
                 ))}
               </select>
             </div>
 
-            <div className="w-[1px] h-8 bg-white/20 hidden md:block"></div>
+            <div className="w-[1px] h-6 bg-white/20 hidden md:block"></div>
 
             <input
-              className="bg-transparent border-none focus:ring-0 text-white w-full py-4 px-2 text-lg placeholder:text-gray-400"
-              placeholder="Search model or name..."
+              className="bg-transparent border-none focus:ring-0 text-white w-full py-3 px-2 text-base placeholder:text-gray-400"
+              placeholder="Search model..."
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
 
-            <button className="hidden md:block bg-[#0da6f2] hover:bg-blue-600 px-8 py-4 rounded-xl text-white font-bold transition-all active:scale-95">
+            <button className="hidden md:block bg-[#0da6f2] hover:bg-blue-600 px-6 py-3 rounded-xl text-white font-bold text-sm transition-all active:scale-95">
               SEARCH
             </button>
           </div>
