@@ -69,11 +69,11 @@ const Navbar = ({ user, logout }) => {
                         Home
                     </NavLink>
                 </li>
-                <li className="flex items-center justify-center my-2 md:my-0 md:mx-4 md:h-full w-full md:w-auto pt-3">
+                {/* <li className="flex items-center justify-center my-2 md:my-0 md:mx-4 md:h-full w-full md:w-auto pt-3">
                     <NavLink to="/compare" className={navLinkClass} onClick={() => setIsMobileNavOpen(false)}>
                         Compare
                     </NavLink>
-                </li>
+                </li> */}
             </ul>
 
             {/* 4. RIGHT: Profile Icon (uses 30px fallback) */}
