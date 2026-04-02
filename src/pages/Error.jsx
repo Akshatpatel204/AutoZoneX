@@ -17,11 +17,13 @@ const Error = memo(({ admin }) => {
     four_zero_four_bg: {
       backgroundImage: 'url(https://cdn.dribbble.com/users/285475/screenshots/2083086/dribbble_1.gif)',
       height: '400px',
+      color: '#000000',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat'
     },
     four_zero_four_bg_h1: {
       fontSize: '80px',
+      color: '#000000',
       textAlign: 'center',
       margin: '0'
     },
@@ -53,7 +55,7 @@ const Error = memo(({ admin }) => {
         <div className="row">
           <div className="col-sm-12">
             <div className="col-sm-10 col-sm-offset-1 text-center" style={{ textAlign: 'center' }}>
-              
+
               <div style={styles.four_zero_four_bg}>
                 <h1 style={styles.four_zero_four_bg_h1}>404</h1>
               </div>
@@ -63,7 +65,7 @@ const Error = memo(({ admin }) => {
                   Look like you're lost
                 </h3>
                 <p style={{ color: '#000' }}>the page you are looking for not available!</p>
-                
+
                 <button
                   onClick={handleBackAction}
                   style={styles.link_404}
