@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import '../styles/detail.css';
 import { MdOutlineAnalytics } from "react-icons/md";
-import { ExternalLink, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ExternalLink, X, ChevronLeft, ChevronRight, CreditCard, Landmark, CheckCircle2 } from 'lucide-react';
 import Footer from '../component/Footer';
 
 // ✅ Import Swiper React components and styles
@@ -17,7 +17,8 @@ const Detail = () => {
     const { id } = useParams();
     const [car, setCar] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [selectedImgIndex, setSelectedImgIndex] = useState(null); // ✅ Track if modal is open
+    const [selectedImgIndex, setSelectedImgIndex] = useState(null); 
+    const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false); // ✅ New state for Purchase Modal
     const API_BASE = import.meta.env.VITE_backendapi;
 
     useEffect(() => {
@@ -45,6 +46,11 @@ const Detail = () => {
         }
     }, [car?.knowmore, car?.knowMore]);
 
+    const handlePaymentSelection = (method) => {
+        alert(`Redirecting to ${method} payment gateway...`);
+        setIsPurchaseModalOpen(false);
+    };
+
     const hasUrl = useMemo(() => !!(car?.knowmore || car?.knowMore), [car?.knowmore, car?.knowMore]);
 
     if (loading) return (
@@ -58,6 +64,55 @@ const Detail = () => {
     return (
         <div className="bg-background-dark text-slate-100 font-sans min-h-screen overflow-x-hidden grid-bg bg-[linear-gradient(to_right,rgba(14,165,233,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(14,165,233,0.05)_1px,transparent_1px)] bg-[size:40px_40px]">
             
+            {/* ✅ Purchase/Payment Modal */}
+            {isPurchaseModalOpen && (
+                <div className="fixed inset-0 z-[150] bg-black/90 backdrop-blur-2xl flex items-center justify-center p-6">
+                    <div className="glass-panel w-full max-w-md p-8 relative border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+                        <button 
+                            onClick={() => setIsPurchaseModalOpen(false)}
+                            className="absolute top-4 right-4 text-white/30 hover:text-white transition-colors"
+                        >
+                            <X size={24} />
+                        </button>
+                        
+                        <div className="text-center mb-8">
+                            <h3 className="text-2xl font-black uppercase italic tracking-tighter text-white mb-2">Checkout</h3>
+                            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Select Payment Method</p>
+                        </div>
+
+                        <div className="space-y-4">
+                            <button 
+                                onClick={() => handlePaymentSelection('UPI')}
+                                className="w-full flex items-center justify-between p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-primary hover:bg-primary/10 transition-all group"
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 rounded-xl bg-primary/20 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                                        <CheckCircle2 size={24} />
+                                    </div>
+                                    <span className="font-bold text-white uppercase tracking-tight">UPI / GPay / PhonePe</span>
+                                </div>
+                                <ChevronRight size={20} className="text-white/20" />
+                            </button>
+
+                            <button 
+                                onClick={() => handlePaymentSelection('Net Banking')}
+                                className="w-full flex items-center justify-between p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-primary hover:bg-primary/10 transition-all group"
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 rounded-xl bg-primary/20 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                                        <Landmark size={24} />
+                                    </div>
+                                    <span className="font-bold text-white uppercase tracking-tight">Net Banking</span>
+                                </div>
+                                <ChevronRight size={20} className="text-white/20" />
+                            </button>
+                        </div>
+
+                        <p className="text-[10px] text-center text-slate-500 mt-8 uppercase font-bold tracking-widest opacity-50">Secure Encrypted Transaction</p>
+                    </div>
+                </div>
+            )}
+
             {/* ✅ Image Popup Modal */}
             {selectedImgIndex !== null && (
                 <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4">
@@ -128,16 +183,23 @@ const Detail = () => {
                             </h2>
                         </div>
 
-                        {hasUrl && (
-                             <div className="hidden md:block absolute bottom-10 right-10 z-20">
+                        {/* ✅ Action Buttons Section (Know More & Purchase) */}
+                        <div className="hidden md:flex absolute bottom-10 right-10 z-20 gap-4">
+                            {hasUrl && (
                                 <button 
                                     onClick={handleKnowMore}
-                                    className="flex items-center gap-3 px-8 py-4 bg-primary hover:bg-white text-white hover:text-black rounded-full font-black uppercase tracking-widest text-xs transition-all duration-300 shadow-[0_10px_30px_rgba(14,165,233,0.4)]"
+                                    className="flex items-center gap-3 px-8 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/10 rounded-full font-black uppercase tracking-widest text-xs transition-all duration-300 shadow-xl"
                                 >
                                     Know More <ExternalLink size={16} />
                                 </button>
-                             </div>
-                        )}
+                            )}
+                            <button 
+                                onClick={() => setIsPurchaseModalOpen(true)}
+                                className="flex items-center gap-3 px-10 py-4 bg-primary hover:bg-white text-white hover:text-black rounded-full font-black uppercase tracking-widest text-xs transition-all duration-300 shadow-[0_10px_30px_rgba(14,165,233,0.4)]"
+                            >
+                                Purchase <CreditCard size={16} />
+                            </button>
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -177,7 +239,7 @@ const Detail = () => {
                                     <div 
                                         key={index} 
                                         className='border border-gray-800 border-dashed overflow-hidden rounded-2xl aspect-video cursor-zoom-in group'
-                                        onClick={() => setSelectedImgIndex(index)} // ✅ Open modal
+                                        onClick={() => setSelectedImgIndex(index)} 
                                     >
                                         <img
                                             alt={`${car.Name} detail ${index}`}
@@ -202,17 +264,22 @@ const Detail = () => {
                                     <CircularProgress score={car.safety_mark} label="Safety Rating" sub="SYSTEM PROTOCOLS" />
                                 </div>
 
-                                {hasUrl && (
-                                    <div className="md:hidden pt-6 border-t border-white/10">
+                                <div className="md:hidden pt-6 border-t border-white/10 space-y-3">
+                                    <button 
+                                        onClick={() => setIsPurchaseModalOpen(true)}
+                                        className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-primary text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-primary/20"
+                                    >
+                                        Purchase Now <CreditCard size={16} />
+                                    </button>
+                                    {hasUrl && (
                                         <button 
                                             onClick={handleKnowMore}
-                                            className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-primary text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all active:scale-95 shadow-lg shadow-primary/20"
+                                            className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-white/5 border border-white/10 text-white rounded-2xl font-black uppercase tracking-widest text-xs"
                                         >
-                                            View Full Source <ExternalLink size={16} />
+                                            View Source <ExternalLink size={16} />
                                         </button>
-                                        <p className="text-[8px] text-center text-slate-500 mt-3 uppercase tracking-tighter font-bold opacity-50">External Technical Database</p>
-                                    </div>
-                                )}
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -262,4 +329,3 @@ const CircularProgress = React.memo(({ score, label, sub }) => {
 });
 
 export default Detail;
-
